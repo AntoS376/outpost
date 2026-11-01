@@ -26,10 +26,10 @@ A field expedition manual: warm linen paper, off-white cards with a fine rule an
 **Easiest:** download **Outpost.zip** from the latest GitHub Release, unzip it and double-click **Install Outpost.command**. The first time, macOS blocks it: open System Settings → Privacy & Security and click **Open Anyway**. The installer offers to install [Homebrew](https://brew.sh) if it's missing, copies Outpost to `~/Applications/Outpost`, runs `scripts/setup-mac.sh` and opens Outpost in your browser. The same in one line:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/OWNER/outpost/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AntoS376/outpost/main/scripts/install.sh | bash
 ```
 
-Make the release ZIP with `./scripts/make-release.sh` and attach it to a GitHub Release as `Outpost.zip`. Replace `OWNER` above and in `scripts/install.sh` with the GitHub account that hosts Outpost (or set `OUTPOST_REPO`).
+Make the release ZIP with `./scripts/make-release.sh` and attach it to a GitHub Release as `Outpost.zip`. To install from a fork instead, change `AntoS376` above and in `scripts/install.sh` to your own account (or set `OUTPOST_REPO`).
 
 **From the code** — requires macOS, [Homebrew](https://brew.sh) and a terminal.
 

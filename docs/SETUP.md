@@ -28,7 +28,7 @@ This guide covers installing Outpost on the Mac, turning on sharing, getting eve
 **Comfortable with Terminal?** This one line does the same as steps 1 to 3:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/OWNER/outpost/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AntoS376/outpost/main/scripts/install.sh | bash
 ```
 
 **Installing from the code instead** (for example **Code → Download ZIP**): put the folder somewhere like `~/Developer/outpost`, not `~/outpost` (macOS ignores upper and lower case, so that would be the same folder as your data folder `~/Outpost`, and setup refuses to run). Then run `./scripts/setup-mac.sh --pull-models` in that folder. Leave out `--pull-models` to choose AI models later.
