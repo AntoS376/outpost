@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/vendor/
+.env
+*.part
+.DS_Store
+screenshots/
+.claude/
+dist-release/
