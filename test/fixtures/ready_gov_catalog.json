@@ -1,0 +1,21 @@
+{
+  "note": "Test fixture only: a made-up sample in the shape the preparedness page reads.",
+  "categories": [
+    { "name": "Action plans", "items": [
+      { "id": "family-plan", "title": "Family emergency plan", "description": "Fill-in plan for meeting places and contacts.", "tags": ["plan", "family"], "pdf": "family_plan.pdf" }
+    ] },
+    { "name": "Hazards", "items": [
+      { "id": "flood", "title": "Floods", "description": "What to do before, during and after a flood.", "tags": ["water", "storm"], "local_file": "docs/ready/flood.pdf" },
+      { "id": "quake", "title": "Earthquakes", "tags": "shaking, drop cover hold", "file": "../../etc/passwd" }
+    ] },
+    { "name": "Youth preparedness", "items": [
+      { "id": "kids", "title": "Ready kids activity book", "pdf": "kids.pdf", "url": "javascript:alert(1)" }
+    ] }
+  ],
+  "items": [
+    { "title": "Business continuity plan", "category": "Ready Business", "pdf": "business.pdf", "url": "https://www.ready.gov/business" },
+    { "title": "Pets and animals", "category": "Specialized guides", "tags": ["pets"] },
+    { "id": "flood", "title": "Flood duplicate", "category": "Hazards" },
+    { "description": "no title, skipped" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "wikipedia": [
+    { "id": "small", "title": "Small", "name": "book_a", "flavour": "maxi", "note": "A with pictures" },
+    { "id": "gone", "title": "Gone", "name": "book_c", "flavour": "maxi", "note": "Not in the catalog" }
+  ],
+  "topics": [
+    { "id": "basics", "title": "Basics", "description": "Two small books.", "levels": [
+      { "id": "basic", "title": "Basic", "description": "One book.", "books": [{ "name": "book_a", "flavour": "nopic", "note": "A" }] },
+      { "id": "extended", "title": "Extended", "description": "Adds a book.", "books": [{ "name": "book_b", "flavour": "", "note": "B" }] },
+      { "id": "nothing-new", "title": "More", "description": "Only a book the catalog no longer has.", "books": [{ "name": "book_c", "flavour": "maxi", "note": "C" }] }
+    ] },
+    { "id": "gone", "title": "Gone", "description": "Only books the catalog no longer has.", "levels": [
+      { "id": "basic", "title": "Basic", "description": "", "books": [{ "name": "book_c", "flavour": "maxi", "note": "C" }] }
+    ] },
+    { "id": "huge", "title": "Huge", "description": "Bigger than any disk.", "levels": [
+      { "id": "basic", "title": "Basic", "description": "", "books": [{ "name": "book_huge", "flavour": "", "note": "H" }] }
+    ] }
+  ],
+  "models": [
+    { "name": "tiny:1b", "size": 100000000, "note": "Small" },
+    { "name": "nomic-embed-text", "size": 270000000, "note": "Documents", "embedding": true }
+  ],
+  "maps": { "world": { "title": "World overview", "note": "Overview", "bbox": [-180, -85, 180, 85], "maxzoom": 6 } }
+}

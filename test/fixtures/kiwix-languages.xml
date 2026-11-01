@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/terms/"
+      xmlns:opds="https://specs.opds.io/opds-1.2"
+      xmlns:thr="http://purl.org/syndication/thread/1.0">
+  <id>7f925a17-6c3f-1b34-34c9-710d6df58ae0</id>
+  <link rel="self"
+        href="/catalog/v2/languages"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start"
+        href="/catalog/v2/root.xml"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <title>List of languages</title>
+  <updated>2026-10-30T05:51:08Z</updated>
+
+  <entry>
+    <title>Abkhazian</title>
+    <dc:language>abk</dc:language>
+    <thr:count>2</thr:count>
+    <link rel="subsection"
+          href="/catalog/v2/entries?lang=abk"
+          type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+    <updated>2026-10-30T05:51:08Z</updated>
+    <id>0d9c7ae8-8c78-fb9c-45cc-00bb19e2c80e</id>
+  </entry>
+  <entry>
+    <title>العربية</title>
+    <dc:language>ara</dc:language>
+    <thr:count>438</thr:count>
+    <link rel="subsection"
+          href="/catalog/v2/entries?lang=ara"
+          type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+    <updated>2026-10-30T05:51:08Z</updated>
+    <id>1c40d5a7-faf9-a3c6-5ec1-6afe9eda44a3</id>
+  </entry>
+  <entry>
+    <title>English</title>
+    <dc:language>eng</dc:language>
+    <thr:count>1309</thr:count>
+    <link rel="subsection"
+          href="/catalog/v2/entries?lang=eng"
+          type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+    <updated>2026-10-30T05:51:08Z</updated>
+    <id>37a437d1-ebe0-e4ee-982f-4d553d4de10b</id>
+  </entry>
+  <entry>
+    <title>français</title>
+    <dc:language>fra</dc:language>
+    <thr:count>518</thr:count>
+    <link rel="subsection"
+          href="/catalog/v2/entries?lang=fra"
+          type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+    <updated>2026-10-30T05:51:08Z</updated>
+    <id>c2874642-42c0-ee9d-73ee-3215e5e079eb</id>
+  </entry>
+  <entry>
+    <title>mul</title>
+    <dc:language>mul</dc:language>
+    <thr:count>1</thr:count>
+    <link rel="subsection"
+          href="/catalog/v2/entries?lang=mul"
+          type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+    <updated>2026-10-30T05:51:08Z</updated>
+    <id>db7e2c78-5194-18e4-13d9-4467e4ad0e92</id>
+  </entry>
+</feed>

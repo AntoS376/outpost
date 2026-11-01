@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/terms/"
+      xmlns:opds="https://specs.opds.io/opds-1.2"
+      xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+  <id>d601f6b6-af68-d715-d9c0-32cdcbdffe9f</id>
+
+  <link rel="self"
+        href="/catalog/v2/entries?q=medicine&amp;lang=eng&amp;count=3"
+        type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+  <link rel="start"
+        href="/catalog/v2/root.xml"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="up"
+        href="/catalog/v2/root.xml"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+
+  <title>Filtered Entries (q=medicine&amp;lang=eng&amp;count=3)</title>
+  <updated>2026-10-29T19:54:19Z</updated>
+  <totalResults>9</totalResults>
+  <startIndex>0</startIndex>
+  <itemsPerPage>3</itemsPerPage>
+  <entry>
+    <id>urn:uuid:bfa1e3b6-1ede-5d20-d4a8-c3a331c1b7e7</id>
+    <title>Medicine LibreTexts</title>
+    <updated>2025-01-16T00:00:00Z</updated>
+    <summary>Medicine courses and bookshelves from LibreTexts.org</summary>
+    <language>eng</language>
+    <name>libretexts.org_en_med</name>
+    <flavour></flavour>
+    <category></category>
+    <tags>medicine;_ftindex:no;_pictures:yes;_videos:yes;_details:yes</tags>
+    <articleCount>23171</articleCount>
+    <mediaCount>30785</mediaCount>
+    <link rel="http://opds-spec.org/image/thumbnail"
+          href="/catalog/v2/illustration/bfa1e3b6-1ede-5d20-d4a8-c3a331c1b7e7/?size=48"
+          type="image/png;width=48;height=48;scale=1"/>
+    <link type="text/html" href="https://browse.library.kiwix.org/content/libretexts.org_en_med_2025-01" />
+    <author>
+      <name>LibreTexts</name>
+    </author>
+    <publisher>
+      <name>openZIM</name>
+    </publisher>
+    <dc:issued>2025-01-16T00:00:00Z</dc:issued>
+    <link rel="http://opds-spec.org/acquisition/open-access" type="application/x-zim" href="https://lb.download.kiwix.org/zim/libretexts/libretexts.org_en_med_2025-01.zim.meta4" length="1192567808" />
+  </entry>
+  <entry>
+    <id>urn:uuid:71b38aa8-a034-4525-b24f-77ada19c76a6</id>
+    <title>Military Medicine</title>
+    <updated>2026-05-04T00:00:00Z</updated>
+    <summary>Doctrinal and Instructional manuals</summary>
+    <language>eng</language>
+    <name>irp.fas.org_en_military-medicine</name>
+    <flavour></flavour>
+    <category>other</category>
+    <tags>_ftindex:yes;preppers;medicine;_category:other;_pictures:yes;_videos:yes;_details:yes</tags>
+    <articleCount>26</articleCount>
+    <mediaCount>2</mediaCount>
+    <link rel="http://opds-spec.org/image/thumbnail"
+          href="/catalog/v2/illustration/71b38aa8-a034-4525-b24f-77ada19c76a6/?size=48"
+          type="image/png;width=48;height=48;scale=1"/>
+    <link type="text/html" href="https://browse.library.kiwix.org/content/irp.fas.org_en_military-medicine_2026-05" />
+    <author>
+      <name>-</name>
+    </author>
+    <publisher>
+      <name>openZIM</name>
+    </publisher>
+    <dc:issued>2026-05-04T00:00:00Z</dc:issued>
+    <link rel="http://opds-spec.org/acquisition/open-access" type="application/x-zim" href="https://lb.download.kiwix.org/zim/zimit/irp.fas.org_en_military-medicine_2026-05.zim.meta4" length="75875328" />
+  </entry>
+  <entry>
+    <id>urn:uuid:bad35b1c-b3fe-be7b-3f41-e9fa2282fe80</id>
+    <title>TED medicine</title>
+    <updated>2026-09-14T00:00:00Z</updated>
+    <summary>A collection of TED videos about medicine</summary>
+    <language>eng,spa,ara,zho,fra,kor,ita,por,vie,tur,rus,jpn,heb,fas,ron,hun,pol,deu,ind,ell,nld</language>
+    <name>ted_mul_medicine</name>
+    <flavour></flavour>
+    <category>ted</category>
+    <tags>medical;_category:ted;ted;_videos:yes;_ftindex:yes;_pictures:yes;_details:yes</tags>
+    <articleCount>321</articleCount>
+    <mediaCount>886</mediaCount>
+    <link rel="http://opds-spec.org/image/thumbnail"
+          href="/catalog/v2/illustration/bad35b1c-b3fe-be7b-3f41-e9fa2282fe80/?size=48"
+          type="image/png;width=48;height=48;scale=1"/>
+    <link type="text/html" href="https://browse.library.kiwix.org/content/ted_mul_medicine_2026-09" />
+    <author>
+      <name>TED</name>
+    </author>
+    <publisher>
+      <name>openZIM</name>
+    </publisher>
+    <dc:issued>2026-09-14T00:00:00Z</dc:issued>
+    <link rel="http://opds-spec.org/acquisition/open-access" type="application/x-zim" href="https://lb.download.kiwix.org/zim/ted/ted_mul_medicine_2026-09.zim.meta4" length="3607249920" />
+  </entry>
+</feed>
