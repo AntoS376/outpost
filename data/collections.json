@@ -1,0 +1,523 @@
+{
+  "about": "Outpost's curated lists for the first-run wizard: Wikipedia sizes, and topics in three levels where each level includes the ones before it. Books are Kiwix catalog names plus flavour (\"\" when the catalog lists none). Sizes always come from the live catalog; entries it no longer has are dropped. Check with: npx tsx scripts/check-collections.ts",
+  "wikipedia": [
+    {
+      "id": "top-short",
+      "title": "Most-read articles, short",
+      "name": "wikipedia_en_top",
+      "flavour": "mini",
+      "note": "The opening section of the most-read articles. Quick answers in little space."
+    },
+    {
+      "id": "top-text",
+      "title": "Most-read articles, full text",
+      "name": "wikipedia_en_top",
+      "flavour": "nopic",
+      "note": "The most-read articles in full, without pictures."
+    },
+    {
+      "id": "all-short",
+      "title": "Every article, short",
+      "name": "wikipedia_en_all",
+      "flavour": "mini",
+      "note": "The opening section of every English article."
+    },
+    {
+      "id": "all-text",
+      "title": "Every article, full text",
+      "name": "wikipedia_en_all",
+      "flavour": "nopic",
+      "note": "Every English article in full, without pictures."
+    },
+    {
+      "id": "all-full",
+      "title": "Every article with pictures",
+      "name": "wikipedia_en_all",
+      "flavour": "maxi",
+      "note": "All of English Wikipedia as you see it online. Very large."
+    }
+  ],
+  "topics": [
+    {
+      "id": "health",
+      "title": "Health",
+      "description": "Look after the sick and injured when no doctor or pharmacy can be reached.",
+      "levels": [
+        {
+          "id": "basic",
+          "title": "Basic",
+          "description": "Handbooks for wounds, illness and medicines: small enough for any Mac.",
+          "books": [
+            {
+              "name": "zimgit-medicine_en",
+              "flavour": "",
+              "note": "Field medicine handbooks: first aid, wounds and illness far from a hospital"
+            },
+            {
+              "name": "nhs.uk_en_medicines",
+              "flavour": "",
+              "note": "Medicines A to Z (NHS): what each medicine is for, how to take it, side effects"
+            },
+            {
+              "name": "wwwnc.cdc.gov_en_all",
+              "flavour": "",
+              "note": "CDC disease and travel health pages: infections, vaccines, outbreaks"
+            }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended",
+          "description": "Adds a full health encyclopedia and field trauma manuals.",
+          "books": [
+            {
+              "name": "medlineplus.gov_en_all",
+              "flavour": "",
+              "note": "MedlinePlus: a plain-language encyclopedia of conditions, tests and drugs"
+            },
+            {
+              "name": "irp.fas.org_en_military-medicine",
+              "flavour": "",
+              "note": "Military field medicine manuals: treating injuries with few supplies"
+            }
+          ]
+        },
+        {
+          "id": "complete",
+          "title": "Complete",
+          "description": "Adds medical textbooks and illustrated references for anyone with training.",
+          "books": [
+            {
+              "name": "wikipedia_en_medicine",
+              "flavour": "maxi",
+              "note": "WikiMed: Wikipedia's medical articles, with pictures"
+            },
+            {
+              "name": "libretexts.org_en_med",
+              "flavour": "",
+              "note": "Open medical textbooks (LibreTexts)"
+            },
+            {
+              "name": "librepathology_en_all",
+              "flavour": "maxi",
+              "note": "LibrePathology: how diseases look under the microscope"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "safety",
+      "title": "Staying safe",
+      "description": "Water, shelter, emergencies and keeping in touch when normal services stop.",
+      "levels": [
+        {
+          "id": "basic",
+          "title": "Basic",
+          "description": "Safe water and strong knots: the first things that matter.",
+          "books": [
+            {
+              "name": "zimgit-water_en",
+              "flavour": "",
+              "note": "Safe drinking water: collecting, filtering, boiling and disinfecting"
+            },
+            {
+              "name": "zimgit-knots_en",
+              "flavour": "",
+              "note": "Knots and lashings, illustrated step by step"
+            }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended",
+          "description": "Adds emergency planning, recovery after a disaster, radio and the outdoors.",
+          "books": [
+            {
+              "name": "ready.gov_en_all",
+              "flavour": "",
+              "note": "Ready.gov: planning for floods, fires, storms and evacuations"
+            },
+            {
+              "name": "zimgit-post-disaster_en",
+              "flavour": "",
+              "note": "After a disaster: shelter, sanitation, salvage and rebuilding"
+            },
+            {
+              "name": "ham.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Amateur radio questions and answers: radios, antennas, emergency nets"
+            },
+            {
+              "name": "outdoors.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Outdoors questions and answers: camping, hiking, finding your way"
+            }
+          ]
+        },
+        {
+          "id": "complete",
+          "title": "Complete",
+          "description": "Adds travel guides for almost every place on Earth.",
+          "books": [
+            {
+              "name": "wikivoyage_en_all",
+              "flavour": "nopic",
+              "note": "Wikivoyage: travel guides to cities, regions and countries"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "title": "Food and farming",
+      "description": "Cook with what you have, keep food safe, and grow more of it.",
+      "levels": [
+        {
+          "id": "basic",
+          "title": "Basic",
+          "description": "Simple recipes and how to store and prepare food when supplies are short.",
+          "books": [
+            {
+              "name": "foss.cooking_en_all",
+              "flavour": "",
+              "note": "FOSS Cooking: short, simple recipes"
+            },
+            {
+              "name": "based.cooking_en_all",
+              "flavour": "",
+              "note": "Based Cooking: everyday recipes without the life stories"
+            },
+            {
+              "name": "zimgit-food-preparation_en",
+              "flavour": "",
+              "note": "Preparing and storing food for hard times"
+            }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended",
+          "description": "Adds answers from experienced gardeners and cooks.",
+          "books": [
+            {
+              "name": "gardening.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Gardening questions and answers: vegetables, soil, pests, trees"
+            },
+            {
+              "name": "cooking.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Cooking questions and answers: techniques, substitutions, food safety"
+            }
+          ]
+        },
+        {
+          "id": "complete",
+          "title": "Complete",
+          "description": "Adds homesteading videos and classic farming books.",
+          "books": [
+            {
+              "name": "lrnselfreliance_en_all",
+              "flavour": "",
+              "note": "Learning Self-Reliance: videos on bees, chickens, goats and homesteading"
+            },
+            {
+              "name": "gutenberg_en_lcc-s",
+              "flavour": "",
+              "note": "Classic farming books (Project Gutenberg): crops, livestock, preserving"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fixing",
+      "title": "Fixing and building",
+      "description": "Repair what breaks and build what you need, from a bicycle to a water pump.",
+      "levels": [
+        {
+          "id": "basic",
+          "title": "Basic",
+          "description": "Answers about wood and engines from people who work with them.",
+          "books": [
+            {
+              "name": "woodworking.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Woodworking questions and answers: joints, tools, finishes"
+            },
+            {
+              "name": "mechanics.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Car and motorbike repair questions and answers"
+            }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended",
+          "description": "Adds step-by-step repair guides, home repairs and simple technology.",
+          "books": [
+            {
+              "name": "ifixit_en_all",
+              "flavour": "",
+              "note": "iFixit: step-by-step repair guides for phones, appliances and more"
+            },
+            {
+              "name": "diy.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Home repair questions and answers: wiring, plumbing, building"
+            },
+            {
+              "name": "appropedia_en_all",
+              "flavour": "maxi",
+              "note": "Appropedia: low-cost technology for water, energy and shelter"
+            }
+          ]
+        },
+        {
+          "id": "complete",
+          "title": "Complete",
+          "description": "Adds a large library on village-scale technology and life off the grid.",
+          "books": [
+            {
+              "name": "cd3wdproject.org_en_all",
+              "flavour": "",
+              "note": "CD3WD: manuals on farming, water, building and small workshops"
+            },
+            {
+              "name": "100r.co_en_all",
+              "flavour": "",
+              "note": "Hundred Rabbits: notes from years of living off-grid on a small boat"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "learning",
+      "title": "Learning",
+      "description": "Textbooks, courses and science for children and adults.",
+      "levels": [
+        {
+          "id": "basic",
+          "title": "Basic",
+          "description": "Open textbooks and hands-on science simulations.",
+          "books": [
+            {
+              "name": "wikibooks_en_all",
+              "flavour": "nopic",
+              "note": "Wikibooks: open textbooks on hundreds of subjects"
+            },
+            {
+              "name": "phet_en_all",
+              "flavour": "",
+              "note": "PhET: interactive science and maths simulations"
+            }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended",
+          "description": "Adds university courses in maths and the sciences.",
+          "books": [
+            {
+              "name": "libretexts.org_en_math",
+              "flavour": "",
+              "note": "Mathematics textbooks (LibreTexts)"
+            },
+            {
+              "name": "libretexts.org_en_phys",
+              "flavour": "",
+              "note": "Physics textbooks (LibreTexts)"
+            },
+            {
+              "name": "libretexts.org_en_chem",
+              "flavour": "",
+              "note": "Chemistry textbooks (LibreTexts)"
+            },
+            {
+              "name": "libretexts.org_en_bio",
+              "flavour": "",
+              "note": "Biology textbooks (LibreTexts)"
+            },
+            {
+              "name": "wikiversity_en_all",
+              "flavour": "maxi",
+              "note": "Wikiversity: courses and learning projects"
+            }
+          ]
+        },
+        {
+          "id": "complete",
+          "title": "Complete",
+          "description": "Adds the humanities, earth science, engineering, video lessons and a dictionary.",
+          "books": [
+            {
+              "name": "libretexts.org_en_human",
+              "flavour": "",
+              "note": "Humanities textbooks (LibreTexts): history, literature, philosophy"
+            },
+            {
+              "name": "libretexts.org_en_geo",
+              "flavour": "",
+              "note": "Earth science textbooks (LibreTexts)"
+            },
+            {
+              "name": "libretexts.org_en_eng",
+              "flavour": "",
+              "note": "Engineering textbooks (LibreTexts)"
+            },
+            {
+              "name": "libretexts.org_en_biz",
+              "flavour": "",
+              "note": "Business and economics textbooks (LibreTexts)"
+            },
+            {
+              "name": "ted_mul_ted-ed",
+              "flavour": "",
+              "note": "TED-Ed: short animated video lessons"
+            },
+            {
+              "name": "wiktionary_en_all",
+              "flavour": "nopic",
+              "note": "Wiktionary: English dictionary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tech",
+      "title": "Computers and electronics",
+      "description": "Write programs, run small computers and build circuits.",
+      "levels": [
+        {
+          "id": "basic",
+          "title": "Basic",
+          "description": "Learn to code, and reference for the most common languages.",
+          "books": [
+            {
+              "name": "freecodecamp_en_all",
+              "flavour": "",
+              "note": "freeCodeCamp: learn programming step by step"
+            },
+            {
+              "name": "devdocs_en_python",
+              "flavour": "",
+              "note": "Python reference"
+            },
+            {
+              "name": "devdocs_en_javascript",
+              "flavour": "",
+              "note": "JavaScript reference"
+            },
+            {
+              "name": "devdocs_en_html",
+              "flavour": "",
+              "note": "HTML reference"
+            },
+            {
+              "name": "devdocs_en_css",
+              "flavour": "",
+              "note": "CSS reference"
+            },
+            {
+              "name": "devdocs_en_bash",
+              "flavour": "",
+              "note": "Bash and command line reference"
+            }
+          ]
+        },
+        {
+          "id": "extended",
+          "title": "Extended",
+          "description": "Adds Arduino and Raspberry Pi projects, and more references.",
+          "books": [
+            {
+              "name": "arduino.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Arduino questions and answers"
+            },
+            {
+              "name": "raspberrypi.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Raspberry Pi questions and answers"
+            },
+            {
+              "name": "devdocs_en_node",
+              "flavour": "",
+              "note": "Node.js reference"
+            },
+            {
+              "name": "devdocs_en_git",
+              "flavour": "",
+              "note": "Git reference"
+            },
+            {
+              "name": "devdocs_en_docker",
+              "flavour": "",
+              "note": "Docker reference"
+            }
+          ]
+        },
+        {
+          "id": "complete",
+          "title": "Complete",
+          "description": "Adds deep electronics and robotics knowledge.",
+          "books": [
+            {
+              "name": "electronics.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Electronics questions and answers: circuits, parts, power"
+            },
+            {
+              "name": "robotics.stackexchange.com_en_all",
+              "flavour": "",
+              "note": "Robotics questions and answers"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "name": "llama3.2:1b",
+      "size": 1320000000,
+      "note": "Smallest. For Macs with 8 GB of memory."
+    },
+    {
+      "name": "llama3.2:3b",
+      "size": 2020000000,
+      "note": "Good default for most Macs.",
+      "recommended": true
+    },
+    {
+      "name": "qwen3:8b",
+      "size": 5230000000,
+      "note": "Stronger answers. Needs 16 GB of memory or more."
+    },
+    {
+      "name": "nomic-embed-text",
+      "size": 270000000,
+      "note": "Needed to search your own documents.",
+      "recommended": true,
+      "embedding": true
+    }
+  ],
+  "maps": {
+    "world": {
+      "title": "World overview",
+      "note": "Countries, cities and main roads. Zoom in for more after picking a region.",
+      "bbox": [
+        -180,
+        -85,
+        180,
+        85
+      ],
+      "maxzoom": 6
+    }
+  }
+}

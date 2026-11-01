@@ -1,0 +1,94 @@
+/* Outpost's look for the Kiwix reader's own pages (its library home, search results and top toolbar), added by
+   Outpost's proxy. Book articles themselves are left as their publishers made them. */
+@font-face { font-family: "Inter Variable"; font-style: normal; font-display: swap; font-weight: 100 900; src: url(/vendor/fonts/inter-latin-wght-normal.woff2) format("woff2-variations"); }
+@font-face { font-family: "Space Grotesk Variable"; font-style: normal; font-display: swap; font-weight: 300 700; src: url(/vendor/fonts/space-grotesk-latin-wght-normal.woff2) format("woff2-variations"); }
+@font-face { font-family: "JetBrains Mono Variable"; font-style: normal; font-display: swap; font-weight: 100 800; src: url(/vendor/fonts/jetbrains-mono-latin-wght-normal.woff2) format("woff2-variations"); }
+
+:root {
+  --o-bg: #efebe5;
+  --o-panel: #f4f1eb;
+  --o-ink: #0f1c12;
+  --o-muted: #5f5a54;
+  --o-line: #c6c0b5;
+  --o-edge: #8f8c85;
+  --o-edge-strong: #36352f;
+  --o-accent: #1b3320;
+  --o-accent-ink: #f4f1eb;
+  --o-chip: #dcdbd3;
+  --o-link: #1d5a32;
+  --o-shadow: 0 1px 2px rgba(15, 28, 18, 0.08), 0 3px 10px rgba(15, 28, 18, 0.06);
+  --o-body: "Inter Variable", Inter, system-ui, -apple-system, sans-serif;
+  --o-display: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
+  --o-mono: "JetBrains Mono Variable", ui-monospace, Menlo, monospace;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --o-bg: #121512;
+    --o-panel: #1b1e1a;
+    --o-ink: #ece8df;
+    --o-muted: #aaa59c;
+    --o-line: #363a34;
+    --o-edge: #454840;
+    --o-edge-strong: #6b6a62;
+    --o-accent: #a9cfae;
+    --o-accent-ink: #0f1c12;
+    --o-chip: #262b25;
+    --o-link: #9fd1aa;
+    --o-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+}
+
+html, body { background: var(--o-bg) !important; color: var(--o-ink) !important; font-family: var(--o-body) !important; }
+a { color: var(--o-link); }
+::selection { background: color-mix(in srgb, var(--o-accent) 25%, transparent); }
+
+/* Library home: the filter bar */
+.kiwixNav { background: var(--o-panel) !important; border-bottom: 1px solid var(--o-line) !important; box-shadow: none !important; }
+.kiwixNav__select, .kiwixNav__kiwixFilter, .kiwixSearch, .kiwixNav__kiwixFilter option {
+  background-color: var(--o-panel) !important; color: var(--o-ink) !important; border: 1px solid var(--o-edge) !important;
+  border-radius: 6px !important; font-family: var(--o-body) !important;
+}
+.kiwixNav__select::after { background-color: var(--o-chip) !important; color: var(--o-ink) !important; border-left: 1px solid var(--o-edge) !important; border-radius: 0 6px 6px 0 !important; }
+.kiwixButton, .kiwixButtonHover {
+  background: var(--o-accent) !important; color: var(--o-accent-ink) !important; border: 1px solid var(--o-accent) !important;
+  border-radius: 6px !important; font: 600 14px/1.2 var(--o-body) !important;
+}
+.kiwixButtonHover:hover { filter: brightness(1.12); }
+.tagFilterLabel { background: var(--o-chip) !important; color: var(--o-ink) !important; border-color: var(--o-line) !important; }
+.kiwixHomeBody, .kiwixHomeBody__results { background: transparent !important; color: var(--o-muted) !important; font-family: var(--o-mono) !important; letter-spacing: 0.06em; }
+.kiwixHomeBody__results { text-transform: uppercase; font-size: 12px !important; }
+
+/* Library home: book cards */
+.book__wrapper {
+  background: var(--o-panel) !important; border: 1.5px solid var(--o-edge-strong) !important; border-radius: 8px !important;
+  box-shadow: var(--o-shadow) !important; color: var(--o-ink) !important; letter-spacing: 0;
+}
+.book__wrapper:hover { box-shadow: 0 2px 4px rgba(15, 28, 18, 0.08), 0 10px 24px rgba(15, 28, 18, 0.1) !important; }
+.book__title { font-family: var(--o-display) !important; color: var(--o-ink) !important; font-weight: 700 !important; }
+.book__description, .book__meta, .book__header { color: var(--o-muted) !important; font-family: var(--o-body) !important; }
+.book__languageTag { background: var(--o-chip) !important; color: var(--o-ink) !important; border-color: var(--o-line) !important; font-family: var(--o-mono) !important; }
+.tag__link { color: var(--o-link) !important; font-family: var(--o-mono) !important; }
+.book__download { color: var(--o-link) !important; }
+.kiwixfooter, .kiwixfooter > a, .noResults { color: var(--o-muted) !important; font-family: var(--o-body) !important; }
+.fadeOut { background: linear-gradient(to bottom, transparent, var(--o-bg)) !important; }
+.modal { background: var(--o-panel) !important; color: var(--o-ink) !important; border: 1px solid var(--o-edge) !important; border-radius: 8px !important; }
+
+/* Reader: the top toolbar (search box and buttons) around each book */
+#kiwixtoolbar { background: var(--o-panel) !important; border-bottom: 1px solid var(--o-line) !important; box-shadow: none !important; font-family: var(--o-body) !important; }
+#kiwixsearchbox, .kiwix #kiwixtoolbar #kiwixsearchform input[type='text'] {
+  background: var(--o-bg) !important; color: var(--o-ink) !important; border: 1px solid var(--o-edge) !important; border-radius: 6px !important;
+  font-family: var(--o-body) !important;
+}
+.kiwix_button_cont > a, #kiwixtoolbar button, .kiwix #kiwixtoolbar input[type="submit"] { color: var(--o-ink) !important; }
+@media (prefers-color-scheme: dark) {
+  /* Kiwix's toolbar icons are dark pictures; lighten them on the dark toolbar. */
+  #kiwixtoolbar img, #kiwixtoolbar button img, label[for="kiwix_button_show_toggle"] img, .feedLogo, #uiLanguageSelectorButton img { filter: invert(0.9); }
+}
+.autoComplete_wrapper > ul { background: var(--o-panel) !important; border: 1px solid var(--o-edge) !important; color: var(--o-ink) !important; }
+a.suggest, a.suggest:visited { color: var(--o-ink) !important; }
+/* Toolbar buttons (library home, this book's home, random article): Outpost's quiet buttons, not white boxes. */
+#kiwixtoolbar button, .kiwix_button_cont > a, #kiwix_serve_taskbar_book_ui_group a, #kiwix_serve_taskbar_library_button a {
+  background: var(--o-panel) !important; border: 1px solid var(--o-edge) !important; border-radius: 6px !important; box-shadow: none !important;
+}
+#kiwixtoolbar button:hover, .kiwix_button_cont > a:hover { border-color: var(--o-edge-strong) !important; }

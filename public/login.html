@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in - Outpost</title>
+  <link rel="icon" type="image/png" href="/img/badge-64.png">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body class="login-page">
+  <main class="login">
+    <div class="brand"><img src="/img/badge-256.png" alt="" width="88" height="83"><b>Outpost</b><small>Knowledge travels further</small></div>
+    <form id="login" class="login-card">
+      <h1>Sign in</h1>
+      <div class="field"><label for="name">Name</label><input id="name" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+      <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <p id="err" class="error-text" role="alert" hidden></p>
+      <button class="btn primary" type="submit" style="width:100%">Sign in</button>
+      <p class="muted" style="font-size:13px;margin:14px 0 0">Forgot your password? An admin can reset it under Home → Accounts. The admin from the settings file uses the password in <code>~/.config/outpost/env</code>.</p>
+    </form>
+  </main>
+  <script type="module">
+    const form = document.getElementById('login');
+    const err = document.getElementById('err');
+    // Only go back to a page on this site after signing in.
+    const next = new URLSearchParams(location.search).get('next');
+    // Back to where they were: a path here, or this same host on another port (books and apps); never another site.
+    const sameHost = (u) => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname === location.hostname; } catch { return false; } };
+    const target = next && ((next.startsWith('/') && !next.startsWith('//')) || sameHost(next)) ? next : '/';
+    fetch('/api/auth/me').then((r) => r.json()).then((me) => {
+      if (me.mode === 'open' || me.user) location.replace(target);
+    }).catch(() => {});
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: form.name.value, password: form.password.value }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Sign-in failed (HTTP ${res.status})`);
+        location.replace(target);
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.hidden = false;
+        form.password.select();
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "apps": [
+    {
+      "id": "files",
+      "name": "File Browser",
+      "description": "Upload, download, rename and share files in your Outpost files folder, from any device that can sign in to Outpost.",
+      "homepage": "https://github.com/filebrowser/filebrowser",
+      "license": "Apache-2.0",
+      "download": {
+        "arm64": {
+          "url": "https://github.com/filebrowser/filebrowser/releases/download/v2.63.23/darwin-arm64-filebrowser.tar.gz",
+          "sha256": "b7d451cb6e31497d649895d410df5e2786fe23c58b6c2341073c967388959f8e"
+        },
+        "x64": {
+          "url": "https://github.com/filebrowser/filebrowser/releases/download/v2.63.23/darwin-amd64-filebrowser.tar.gz",
+          "sha256": "6117f440538d442e7ef831749f6ca085f9928c27fc4c62d9944c96b2d20333a1"
+        },
+        "extract": "filebrowser"
+      },
+      "bin": "{home}/bin/filebrowser",
+      "args": [
+        "--address",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--root",
+        "{home}/files",
+        "--baseURL",
+        "{prefix}",
+        "--database",
+        "{data}/filebrowser.db",
+        "--noauth"
+      ],
+      "folders": [
+        "{home}/files"
+      ],
+      "port": 8095,
+      "prefix": true,
+      "health": "/health",
+      "members": "read",
+      "note": "Uses Outpost's sign-in instead of its own (--noauth). Members can browse and download; only admins can upload, rename or delete."
+    },
+    {
+      "id": "music",
+      "name": "Navidrome",
+      "description": "Your music and audiobooks, played in the browser on any device that can sign in to Outpost.",
+      "homepage": "https://www.navidrome.org",
+      "license": "GPL-3.0",
+      "download": {
+        "arm64": {
+          "url": "https://github.com/navidrome/navidrome/releases/download/v0.64.2/navidrome_0.64.2_darwin_arm64.tar.gz",
+          "sha256": "8b0a7798001453719ad50c12f7025a6044546c4a3568efe51feb296681f29956"
+        },
+        "x64": {
+          "url": "https://github.com/navidrome/navidrome/releases/download/v0.64.2/navidrome_0.64.2_darwin_amd64.tar.gz",
+          "sha256": "bc872847dcd1c0d760bb9b8730f2a3c876e0ff0679e5440755c37697f2804a23"
+        },
+        "extract": "navidrome"
+      },
+      "bin": "{home}/bin/navidrome",
+      "args": [
+        "--address",
+        "127.0.0.1",
+        "--port",
+        "{port}",
+        "--musicfolder",
+        "{home}/files/Music",
+        "--datafolder",
+        "{data}",
+        "--baseurl",
+        "{prefix}"
+      ],
+      "folders": [
+        "{home}/files/Music"
+      ],
+      "port": 8096,
+      "prefix": true,
+      "health": "/app/",
+      "members": "write",
+      "note": "Plays what's in the Music folder of File Browser (~/Outpost/files/Music). Navidrome has its own accounts: the first person to open it creates its admin. Converting formats on the fly needs ffmpeg (brew install ffmpeg); without it, files play as they are."
+    }
+  ],
+  "devices": [
+    {
+      "id": "organic-maps",
+      "name": "Organic Maps",
+      "what": "Offline maps for your phone with turn-by-turn directions for walking, cycling and driving.",
+      "license": "Apache-2.0",
+      "page": "https://organicmaps.app/",
+      "platforms": [
+        {
+          "label": "Android",
+          "file": {
+            "url": "https://github.com/organicmaps/organicmaps/releases/download/2026.09.29-32-android/OrganicMaps-26092932-web-release.apk",
+            "sha256": "d7dbdfc3cbfdbcce6d437f11147f2cd15384c03052d2b4594fd8c1c7777dd497",
+            "size": 63888223
+          }
+        },
+        {
+          "label": "iPhone",
+          "link": "https://organicmaps.app/"
+        }
+      ]
+    },
+    {
+      "id": "kiwix",
+      "name": "Kiwix",
+      "what": "Read Library books (ZIM files) on your phone or Mac, even away from Outpost.",
+      "license": "GPL-3.0",
+      "page": "https://kiwix.org/en/applications/",
+      "platforms": [
+        {
+          "label": "Android",
+          "file": {
+            "url": "https://github.com/kiwix/kiwix-android/releases/download/v3.14.1/v3.14.1-arm64-v8a-standalone.apk",
+            "sha256": "62a9910be260030e642465c17d642537e6ee4ee5f2d4596c248267c2766a88b8",
+            "size": 70366062
+          }
+        },
+        {
+          "label": "iPhone and Mac",
+          "link": "https://kiwix.org/en/applications/"
+        }
+      ]
+    },
+    {
+      "id": "keepassxc",
+      "name": "KeePassXC",
+      "what": "A password manager that keeps everything in one encrypted file, fully offline.",
+      "license": "GPL-2.0 or GPL-3.0",
+      "page": "https://keepassxc.org/download/",
+      "platforms": [
+        {
+          "label": "Mac (Apple chip)",
+          "file": {
+            "url": "https://github.com/keepassxreboot/keepassxc/releases/download/2.8.0/KeePassXC-2.8.0-1-arm64.dmg",
+            "sha256": "85f0e75e258ef513f0fc7f5bf470cad0943b7d7e8191b2171f9898ad32e62b9c",
+            "size": 47786914
+          }
+        },
+        {
+          "label": "Mac (Intel)",
+          "file": {
+            "url": "https://github.com/keepassxreboot/keepassxc/releases/download/2.8.0/KeePassXC-2.8.0-1-x86_64.dmg",
+            "sha256": "28492c5535570020179150b2871b3c54abd032cbb8cdee2f1b3fa7c46cdba43e",
+            "size": 49791713
+          }
+        }
+      ]
+    },
+    {
+      "id": "stirling-pdf",
+      "name": "Stirling PDF",
+      "what": "Merge, split, compress, OCR and convert PDFs on your Mac.",
+      "license": "Open source (see its website)",
+      "page": "https://docs.stirlingpdf.com/",
+      "platforms": [
+        {
+          "label": "Mac",
+          "file": {
+            "url": "https://github.com/Stirling-Tools/Stirling-PDF/releases/download/v3.2.2/Stirling-PDF-macos-universal.dmg",
+            "sha256": "906785fb858ec5e34a9c0c76162442876d7d3db6f9fe75037a503fbce380af77",
+            "size": 333305733
+          }
+        }
+      ]
+    },
+    {
+      "id": "bitchat",
+      "name": "Bitchat",
+      "what": "Chat with people nearby over Bluetooth, with no internet or phone signal.",
+      "license": "Unlicense (public domain)",
+      "page": "https://github.com/permissionlesstech/bitchat",
+      "platforms": [
+        {
+          "label": "iPhone",
+          "link": "https://apps.apple.com/us/app/bitchat-mesh/id6748219622"
+        },
+        {
+          "label": "Android",
+          "link": "https://play.google.com/store/apps/details?id=com.bitchat.droid"
+        }
+      ]
+    },
+    {
+      "id": "meshtastic",
+      "name": "Meshtastic",
+      "what": "Text messages over long-range LoRa radios, kilometres apart with no network. Needs a small radio device.",
+      "license": "GPL-3.0",
+      "page": "https://meshtastic.org/docs/software/",
+      "platforms": [
+        {
+          "label": "Android",
+          "file": {
+            "url": "https://github.com/meshtastic/Meshtastic-Android/releases/download/v2.8.3/androidApp-fdroid-universal-release.apk",
+            "sha256": "af536556562fbfad197c49f5992a68bab99452111e9ffa03ff8edff105587a28",
+            "size": 45238103
+          }
+        },
+        {
+          "label": "iPhone and Mac",
+          "link": "https://meshtastic.org/docs/software/"
+        }
+      ]
+    },
+    {
+      "id": "vlc",
+      "name": "VLC",
+      "what": "Plays almost any video or music file.",
+      "license": "GPL-2.0",
+      "page": "https://www.videolan.org/vlc/",
+      "platforms": [
+        {
+          "label": "All devices",
+          "link": "https://www.videolan.org/vlc/"
+        }
+      ]
+    },
+    {
+      "id": "libreoffice",
+      "name": "LibreOffice",
+      "what": "Open and edit documents, spreadsheets and presentations.",
+      "license": "MPL-2.0",
+      "page": "https://www.libreoffice.org/download/download-libreoffice/",
+      "platforms": [
+        {
+          "label": "Mac",
+          "link": "https://www.libreoffice.org/download/download-libreoffice/"
+        }
+      ]
+    }
+  ],
+  "checked": "2026-10-31"
+}

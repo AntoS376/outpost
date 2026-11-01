@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Outpost</title>
+  <link rel="icon" type="image/png" href="/img/badge-64.png">
+  <link rel="apple-touch-icon" href="/img/badge-180.png">
+  <link rel="preload" href="/vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/vendor/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="Sections">
+      <div class="brand"><img src="/img/badge-256.png" alt="" width="88" height="83"><b>Outpost</b><small>Knowledge travels further</small></div>
+      <a href="#home" data-route="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+      <a href="#library" data-route="library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-1 .2"/><path d="M20 4v14h-7"/></svg><span>Library</span></a>
+      <a href="#ai" data-route="ai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><span class="label-full">Assistant</span><span class="label-short" aria-hidden="true">Chat</span></a>
+      <a href="#maps" data-route="maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l6 2 6-2v14l-6 2-6-2-6 2V6z"/><path d="M9 4v14M15 6v14"/></svg><span>Maps</span></a>
+      <a href="#education" data-route="education"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/></svg><span class="label-full">Education</span><span class="label-short" aria-hidden="true">Learn</span></a>
+      <a href="#emergency" data-route="emergency"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg><span class="label-full">Emergency</span><span class="label-short" aria-hidden="true">SOS</span></a>
+      <a href="#notes" data-route="notes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg><span>Notes</span></a>
+      <a href="#tools" data-route="tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0 5 5L10 21a2.1 2.1 0 0 1-3-3z"/></svg><span>Tools</span></a>
+      <div class="spacer"></div>
+      <svg class="ridge" viewBox="0 0 200 60" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M4 56 L46 22 L60 32 L84 10 L112 40 L128 30 L156 50 L196 56"/><path d="M70 22 l6 -4 l5 6"/><path d="M14 56v-9l4-8 4 8v9M30 56v-12l5-10 5 10v12M150 56v-10l4-8 4 8v10M168 56v-13l5-10 5 10v13M182 56v-8l3-7 3 7v8"/><path d="M4 57.5h192"/></svg>
+      <div class="whoami" id="whoami" hidden></div>
+      <button id="jobs-btn" class="railbtn" type="button" aria-expanded="false" aria-controls="tray">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
+        <span>Transfers</span><b id="jobs-badge" hidden>0</b>
+      </button>
+    </nav>
+    <div class="mainwrap">
+      <div class="sosbar" id="sosbar" hidden></div>
+      <header class="topbar"><span class="where"><b>Outpost</b> · <span id="where">Home</span></span>
+        <div class="right">
+          <span class="state" id="srvstate" role="status"><i aria-hidden="true"></i><span>Running</span></span>
+          <span class="battery" id="battery" role="img" hidden><svg viewBox="0 0 28 14" aria-hidden="true"><rect class="shell" x="1" y="1" width="23" height="12" rx="3"/><rect class="tip" x="25" y="4.5" width="2" height="5" rx="1"/><rect class="level" x="3" y="3" width="0" height="8" rx="1.5"/><path class="bolt" d="M14 2.5 9.5 7.5h3.5L11 11.5l4.5-5H12z"/></svg><span></span></span>
+          <span class="pill netpill" id="netpill" hidden></span><span class="netip" id="netip" hidden></span>
+          <span class="sep" aria-hidden="true"></span>
+          <a class="quick" href="#guide"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><path d="M12 17.2h.01"/></svg><span>Help</span></a>
+          <button class="quick" id="theme" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg><span>Auto</span></button>
+          <a class="quick" href="#account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></a>
+          <button class="quick admin-only" id="shutdown" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span>Shutdown</span></button>
+        </div></header>
+      <main id="main"></main>
+    </div>
+  </div>
+  <section id="tray" hidden aria-label="Transfers">
+    <header><strong>Transfers</strong><button class="btn small" id="tray-close" type="button">Close</button></header>
+    <div id="tray-body"></div>
+  </section>
+  <div id="toasts" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
