@@ -2,7 +2,7 @@
 
 A self-hosted offline knowledge server for macOS: a library, an AI assistant, maps, notes and emergency tools that keep working with no internet, served from your Mac to the devices around it. Everything runs natively on the Mac; Docker is only needed for the optional Docker apps.
 
-<img width="2560" height="1600" alt="outpost-home" src="https://github.com/user-attachments/assets/c7d45646-c6a0-4067-b7b4-10bc3b4d7f39" />
+<img width="1600" height="2078" alt="outpost" src="https://github.com/user-attachments/assets/8314d8a5-dd24-4245-8218-d0d3b483978d" />
 
 
 | Module | What it does | Powered by |
