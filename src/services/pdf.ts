@@ -5,10 +5,13 @@ import { HttpError } from '../util.js';
 const MB = 1024 * 1024;
 const mb = (bytes: number) => `${Math.round((bytes / MB) * 100) / 100} MB`;
 
-/** Reads a request body into memory, refusing it as soon as it passes `limit` bytes. */
-export async function readLimited(req: Readable & { headers: Record<string, unknown> }, limit: number): Promise<Uint8Array> {
-  const tooBig = (size: number) =>
-    new HttpError(413, `This PDF is ${mb(size)}; the limit is ${mb(limit)}. Split it, or raise OUTPOST_PDF_MAX_MB in ~/.config/outpost/env.`);
+/** Reads a request body into memory, refusing it as soon as it passes `limit` bytes (`tooBigText` says why). */
+export async function readLimited(
+  req: Readable & { headers: Record<string, unknown> },
+  limit: number,
+  tooBigText = (size: number) => `This PDF is ${mb(size)}; the limit is ${mb(limit)}. Split it, or raise OUTPOST_PDF_MAX_MB in ~/.config/outpost/env.`,
+): Promise<Uint8Array> {
+  const tooBig = (size: number) => new HttpError(413, tooBigText(size));
   const declared = Number(req.headers['content-length']);
   if (declared > limit) {
     req.resume(); // drain so the connection can answer

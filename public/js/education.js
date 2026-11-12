@@ -1,4 +1,4 @@
-import { $, api, esc, toast, contentBase } from './core.js';
+import { $, api, esc, toast, contentBase, installAddon } from './core.js';
 
 const LABEL = { 'not-installed': 'Not installed', 'python-missing': 'Needs repair', stopped: 'Stopped', starting: 'Starting', running: 'Running', crashed: 'Stopped working' };
 const LAMP = { running: 'ok', starting: 'idle', stopped: 'idle', 'not-installed': 'idle', 'python-missing': 'warn', crashed: 'warn' };
@@ -12,9 +12,9 @@ export async function viewEducation(root) {
   let busy = false;
 
   async function render() {
-    let s;
+    let s, install;
     try {
-      s = await api('/education');
+      [s, install] = await Promise.all([api('/education'), api('/install/kolibri')]);
     } catch (e) {
       body.innerHTML = `<p class="error-text">${esc(e.message)}</p>`;
       return;
@@ -25,8 +25,10 @@ export async function viewEducation(root) {
         <div><strong>Kolibri: ${LABEL[s.state]}</strong><p>${s.message ? esc(s.message) : on ? 'Ready.' : 'Start it when you want to use it. Outpost remembers and starts it again after a restart.'}</p></div>
         <div class="row">${installed ? `<span class="admin-only">${on ? '<button class="btn" type="button" id="stop">Stop</button>' : '<button class="btn primary" type="button" id="start">Start</button>'}</span>` : ''}
           ${s.state === 'running' ? `<a class="btn primary" href="${esc((await contentBase()) + s.url)}" target="_blank" rel="noopener">Open Kolibri</a>` : ''}</div></li></ul>
-      ${installed ? '' : `<section class="block"><h2>Install</h2><p>In Terminal, in the Outpost folder, run:</p><pre><code>./scripts/install-kolibri.sh</code></pre>
-        <p class="muted">It puts Kolibri in <code>~/Outpost/kolibri-venv</code> without needing an administrator password. Kolibri needs Python 3.10 to 3.14; if this Mac has none, the script installs Python 3.13 with Homebrew. About 150 MB.</p></section>`}
+      ${installed ? '' : `<section class="block"><h2>Install</h2>
+        <p class="admin-only">${install.job ? `<button class="btn primary" type="button" disabled>Installing…</button> <span class="muted">${esc(install.job.message || 'Starting')}. Follow it under Transfers.</span>` : `<button class="btn primary" type="button" id="install">${s.state === 'python-missing' ? 'Repair Kolibri' : 'Install Kolibri'}</button>`}</p>
+        <p class="member-only muted">An admin can install Kolibri from this page.</p>
+        <p class="muted">It puts Kolibri in <code>~/Outpost/kolibri-venv</code> without needing an administrator password. Kolibri needs Python 3.10 to 3.14; if this Mac has none, it installs Python 3.13 with Homebrew. About 150 MB, a few minutes.</p></section>`}
       <section class="block"><h2>Good to know</h2><ul class="tips">
         <li>The first time you open Kolibri it asks you to set it up: choose a name for your learning facility and create an administrator account.</li>
         <li>Kolibri has its own accounts. Add learners and coaches in Kolibri under <b>Facility → Users</b>. They are separate from the Outpost sign-in.</li>
@@ -36,6 +38,15 @@ export async function viewEducation(root) {
   }
 
   body.addEventListener('click', async (e) => {
+    if (e.target.id === 'install') {
+      const why = 'Outpost runs its Kolibri installer: a pinned Kolibri version in its own Python environment, with Python 3.13 from Homebrew if this Mac has no suitable one.';
+      try {
+        if (await installAddon('kolibri', 'Kolibri', why)) render();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+      return;
+    }
     if (busy || !['start', 'stop'].includes(e.target.id)) return;
     busy = true;
     e.target.disabled = true;

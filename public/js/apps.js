@@ -1,4 +1,4 @@
-import { $, api, contentBase, esc, fmtBytes, jsonBody, toast } from './core.js';
+import { $, api, confirmCommand, contentBase, esc, fmtBytes, jsonBody, toast } from './core.js';
 import { mountDocker } from './docker-apps.js';
 
 const STATE = {
@@ -9,24 +9,6 @@ const STATE = {
   running: ['ok', 'Running'],
   crashed: ['warn', 'Stopped working'],
 };
-
-/** Asks before any command runs, showing it exactly. Resolves true only on "Run it". */
-function confirmCommand(title, why, command) {
-  const dlg = document.createElement('dialog');
-  dlg.className = 'cmd-dialog';
-  dlg.innerHTML = `<form method="dialog"><h2>${esc(title)}</h2><p>${esc(why)}</p>
-    <pre><code>${esc(command)}</code></pre>
-    <p class="muted">It runs as your Mac account, without a shell. Nothing runs until you choose <b>Run it</b>.</p>
-    <div class="row"><button class="btn" value="no" autofocus>Cancel</button><button class="btn primary" value="yes">Run it</button></div></form>`;
-  document.body.append(dlg);
-  return new Promise((resolve) => {
-    dlg.addEventListener('close', () => {
-      resolve(dlg.returnValue === 'yes');
-      dlg.remove();
-    });
-    dlg.showModal();
-  });
-}
 
 /** The Apps shelf: local web apps Outpost can install (after you confirm), start and stop. */
 export async function viewApps(root) {
@@ -42,7 +24,7 @@ export async function viewApps(root) {
       <p class="muted" style="max-width:70ch">Any program that serves a web page on a port. Install it yourself first (for example with Homebrew). Ask it to listen on <code>127.0.0.1</code> only; Outpost can't check that for you. In the command you can use <code>{port}</code>, <code>{prefix}</code> (<code>/apps/&lt;short name&gt;</code>), <code>{data}</code> (its own folder in Outpost) and <code>{home}</code> (the Outpost folder).</p>
       <form id="custom" class="appform">
         <div><label for="c-name">Name</label><input id="c-name" maxlength="60" required placeholder="e.g. My wiki"></div>
-        <div><label for="c-id">Short name</label><input id="c-id" maxlength="32" required pattern="[a-z0-9][a-z0-9-]*" autocapitalize="none" spellcheck="false" placeholder="e.g. wiki"></div>
+        <div><label for="c-id">Short name</label><input id="c-id" maxlength="32" required pattern="[a-z0-9][a-z0-9\\-]*" autocapitalize="none" spellcheck="false" placeholder="e.g. wiki"></div>
         <div class="wide"><label for="c-cmd">Command that starts it</label><input id="c-cmd" maxlength="1000" required spellcheck="false" autocapitalize="none" placeholder="e.g. mywiki --host 127.0.0.1 --port {port}"></div>
         <div><label for="c-port">Port</label><input id="c-port" type="number" min="1024" max="65535" required placeholder="e.g. 8096"></div>
         <div><label for="c-health">Ready check (optional)</label><input id="c-health" spellcheck="false" placeholder="e.g. /health"></div>

@@ -180,6 +180,31 @@ describe('library look', () => {
       kiwix.close();
     }
   });
+
+  it('makes browsers check back before reusing a page, so a changed framing rule applies at once', async () => {
+    const { kiwixProxy } = await import('../src/proxy.js');
+    const kiwix = http.createServer((req, res) => {
+      res.setHeader('Content-Type', req.url!.endsWith('.png') ? 'image/png' : 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'max-age=31536000, immutable'); // as kiwix-serve 3.8 marks its skin files
+      res.end('<html><head></head><body>page</body></html>');
+    });
+    const kp = await listen(kiwix);
+    const express = (await import('express')).default;
+    const app = express();
+    app.use('/kiwix', kiwixProxy(kp));
+    const s = http.createServer(app);
+    const base = `http://127.0.0.1:${await listen(s)}`;
+    try {
+      const cache = async (p: string) => (await fetch(base + p)).headers.get('cache-control');
+      for (const p of ['/kiwix/viewer', '/kiwix/skin/blank.html?cacheid=1', '/kiwix/content/wikipedia_en/A/Water']) {
+        assert.equal(await cache(p), 'no-cache', p);
+      }
+      assert.equal(await cache('/kiwix/skin/logo.png'), 'max-age=31536000, immutable', 'pictures keep their caching');
+    } finally {
+      s.close();
+      kiwix.close();
+    }
+  });
 });
 
 describe('content address', () => {
@@ -200,10 +225,11 @@ describe('content address', () => {
         assert.equal(r.headers.location, `http://127.0.0.1:8090${p}`, p);
       }
       assert.equal((await raw(port, 'POST', '/apps/files/api/x', `127.0.0.1:${port}`)).status, 404);
-      // The content address serves only them, and may be framed only by Outpost's own pages.
+      // The content address serves only them, and may be framed only by Outpost's own pages and by itself (Kiwix's
+      // viewer shows each article in a frame on the content address; every ancestor must be allowed).
       const lib = await raw(cport, 'GET', '/kiwix/', `127.0.0.1:${cport}`);
       assert.equal(lib.status, 503, 'reader not running in this test, but served here');
-      assert.equal(lib.headers['content-security-policy'], 'frame-ancestors http://127.0.0.1:8080 https://127.0.0.1:8443');
+      assert.equal(lib.headers['content-security-policy'], "frame-ancestors 'self' http://127.0.0.1:8080 https://127.0.0.1:8443");
       assert.equal(lib.headers['x-frame-options'], undefined);
       assert.equal((await raw(cport, 'GET', '/api/notes', `127.0.0.1:${cport}`)).headers.location, 'http://127.0.0.1:8080/', 'no Outpost API here');
       assert.equal((await raw(cport, 'GET', '/kiwix/', `evil.example:${cport}`)).status, 421, 'same host check');

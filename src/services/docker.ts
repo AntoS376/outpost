@@ -1,6 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -33,6 +34,21 @@ const REFUSED: [RegExp, string][] = [
   [/^(network|net)$/i, "Outpost doesn't change a container's network (no host networking)."],
   [/^(cap|capadd|cap_add|caps|device|devices|pid|ipc|userns|securityopt|security_opt|volumes|volume|mounts|mount|args|command|extra)$/i, 'Outpost only takes the fields on its form.'],
 ];
+/** Docker's closing hint after an error, which says nothing about what went wrong. */
+const HELP_HINT = /^Run '[^']*--help' for more information/;
+const PORT_TAKEN = /port is already allocated|address already in use/i;
+
+/** True when something on this Mac already listens on 127.0.0.1:port. */
+function portInUse(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const s = net.createServer();
+    s.once('error', (e: NodeJS.ErrnoException) => resolve(e.code === 'EADDRINUSE'));
+    s.listen(port, '127.0.0.1', () => s.close(() => resolve(false)));
+  });
+}
+
+const portTaken = (port: number) => `Port ${port} on this Mac is already in use by another program. Choose another port.`;
+
 const DOCKER_HELP = [
   { name: 'Docker Desktop', url: 'https://www.docker.com/products/docker-desktop/' },
   { name: 'OrbStack', url: 'https://orbstack.dev/download' },
@@ -177,8 +193,9 @@ export class DockerService {
   }
 
   /** What the admin sees and must confirm: the whole command as it would be typed. */
-  preview(body: Record<string, unknown>) {
+  async preview(body: Record<string, unknown>) {
     const spec = this.check(body);
+    if (await portInUse(spec.hostPort)) throw new HttpError(409, portTaken(spec.hostPort));
     const bin = this.bin() ?? 'docker';
     return { command: showCommand([bin, ...this.argv(spec)]), url: `http://localhost:${spec.hostPort}/` };
   }
@@ -207,6 +224,7 @@ export class DockerService {
     if ((await this.list()).some((c) => c.name === spec.name)) throw new HttpError(409, `There's already a Docker app called ${spec.name}. Remove it first.`);
     const busy = this.runs.get(spec.name);
     if (busy?.status === 'running') throw new HttpError(409, `${spec.name} is already starting.`);
+    if (await portInUse(spec.hostPort)) throw new HttpError(409, portTaken(spec.hostPort));
     await fsp.mkdir(path.join(this.root, spec.name), { recursive: true, mode: 0o700 });
     for (const f of spec.folders) await fsp.mkdir(this.source(spec, f.folder), { recursive: true });
     this.assertSafe(spec, args);
@@ -215,7 +233,7 @@ export class DockerService {
         const child = spawn(bin, args, { stdio: ['ignore', 'pipe', 'pipe'], env: this.env(bin) });
         const tail: string[] = [];
         const onData = (buf: Buffer) => {
-          const lines = buf.toString().split(/[\r\n]+/).map((l) => l.trim()).filter(Boolean);
+          const lines = buf.toString().split(/[\r\n]+/).map((l) => l.trim()).filter((l) => l && !HELP_HINT.test(l));
           if (lines.length) job.message = lines.at(-1)!.slice(0, 200);
           tail.push(...lines);
           if (tail.length > 20) tail.splice(0, tail.length - 20);
@@ -227,8 +245,10 @@ export class DockerService {
         child.once('error', reject);
         child.once('exit', (code) => {
           signal.removeEventListener('abort', abort);
-          if (code === 0) resolve(`Running. Open http://localhost:${spec.hostPort}/ on this Mac.`);
-          else reject(new Error(`docker run stopped with an error: ${tail.slice(-2).join(' | ').slice(0, 300)}`));
+          if (code === 0) return resolve(`Running. Open http://localhost:${spec.hostPort}/ on this Mac.`);
+          const said = tail.slice(-2).join(' | ').replace(/docker: Error response from daemon: /g, '');
+          const why = PORT_TAKEN.test(said) ? portTaken(spec.hostPort) : `docker run stopped with an error: ${said.slice(0, 300)}`;
+          this.removeUnstarted(spec.name).then(() => reject(new Error(why)), () => reject(new Error(why)));
         });
       }),
     );
@@ -254,6 +274,11 @@ export class DockerService {
       list.push({ name: full.slice(PREFIX.length), image: String(c.Image ?? ''), state: String(c.State ?? ''), status: String(c.Status ?? ''), hostPort: port ? Number(port[1]) : null });
     }
     return list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** A failed `docker run` can leave its container made but never started; only Outpost's own is removed. */
+  private async removeUnstarted(name: string): Promise<void> {
+    if ((await this.list()).some((c) => c.name === name && c.state === 'created')) await this.docker(['rm', '--force', PREFIX + name], 60_000);
   }
 
   private async managed(name: string): Promise<string> {

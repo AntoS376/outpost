@@ -92,9 +92,9 @@ export class KolibriService {
   private explain(state: KolibriState): string {
     switch (state) {
       case 'not-installed':
-        return `Kolibri isn't installed. In Terminal, in the Outpost folder, run ${INSTALL} (it gets a suitable Python with Homebrew if needed), then come back here.`;
+        return `Kolibri isn't installed. An admin can install it below, or run ${INSTALL} in Terminal in the Outpost folder (it gets a suitable Python with Homebrew if needed).`;
       case 'python-missing':
-        return `Kolibri's Python is missing (a Homebrew upgrade can remove it). Run ${INSTALL} again to repair it.`;
+        return `Kolibri's Python is missing (a Homebrew upgrade can remove it). An admin can repair it below, or run ${INSTALL} again.`;
       case 'crashed':
         return `Kolibri stopped repeatedly. ${this.proc.logs.length ? `Last message: ${this.proc.logs.at(-1)}` : ''}`;
       case 'starting':

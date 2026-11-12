@@ -160,6 +160,34 @@ export function openTray() {
   if ($('#tray').hidden) $('#jobs-btn').click();
 }
 
+/** Asks before any command runs, showing it exactly. Resolves true only on "Run it". */
+export function confirmCommand(title, why, command) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'cmd-dialog';
+  dlg.innerHTML = `<form method="dialog"><h2>${esc(title)}</h2><p>${esc(why)}</p>
+    <pre><code>${esc(command)}</code></pre>
+    <p class="muted">It runs as your Mac account, without a shell. Nothing runs until you choose <b>Run it</b>.</p>
+    <div class="row"><button class="btn" value="no" autofocus>Cancel</button><button class="btn primary" value="yes">Run it</button></div></form>`;
+  document.body.append(dlg);
+  return new Promise((resolve) => {
+    dlg.addEventListener('close', () => {
+      resolve(dlg.returnValue === 'yes');
+      dlg.remove();
+    });
+    dlg.showModal();
+  });
+}
+
+/** Installs Kolibri or CyberChef with its script, after the admin confirms it; progress shows under Transfers. */
+export async function installAddon(id, name, why) {
+  const { command } = await api(`/install/${id}`);
+  if (!(await confirmCommand(`Install ${name}?`, why, command))) return false;
+  await api(`/install/${id}`, jsonBody({ confirm: command }));
+  toast(`Installing ${name}…`);
+  openTray();
+  return true;
+}
+
 export function startJobsUI() {
   const tray = $('#tray');
   const btn = $('#jobs-btn');

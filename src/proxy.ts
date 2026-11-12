@@ -27,7 +27,11 @@ export function localProxy(opts: { port: number; readOnly: boolean; keepHost: bo
     if (cookie) headers.cookie = cookie;
     else delete headers.cookie;
     const upstream = http.request({ host: '127.0.0.1', port: opts.port, method: req.method, path: req.originalUrl, headers }, (up) => {
-      const html = String(up.headers['content-type'] ?? '').startsWith('text/html') && !up.headers['content-encoding'];
+      const isHtml = String(up.headers['content-type'] ?? '').startsWith('text/html');
+      // Pages carry Outpost's framing rules, so a browser must check back before reusing one: Kiwix marks some of
+      // its pages immutable for a year, which would keep an old rule that long.
+      if (isHtml) up.headers['cache-control'] = 'no-cache';
+      const html = isHtml && !up.headers['content-encoding'];
       if (!skin || !html) {
         res.writeHead(up.statusCode ?? 502, up.headers);
         up.pipe(res);

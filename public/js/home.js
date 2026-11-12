@@ -1,5 +1,7 @@
 import { $, api, contentBase, esc, fmtBytes, jsonBody, toast } from './core.js';
 import { openSosDialog } from './sos.js';
+import { snapshot } from './voice-core.js';
+import { voiceBand } from './voice-band.js';
 
 const LOOPBACK = ['127.0.0.1', '::1', 'localhost'];
 
@@ -54,12 +56,12 @@ async function copy(text, input) {
 
 export async function viewHome(root) {
   root.innerHTML = `<header class="fieldhead">
-      <img src="/img/badge-256.png" alt="" width="92" height="87">
       <div class="word"><h1>Outpost</h1><span>Knowledge travels further</span></div>
       <p class="kicker motto">Offline library<br>Survival tools<br>A more resilient tomorrow</p>
     </header>
     <div id="home-body"><p class="muted">Checking…</p></div>`;
   const body = $('#home-body', root);
+  const vb = voiceBand();
 
   async function render() {
     let s;
@@ -174,7 +176,7 @@ export async function viewHome(root) {
           <div class="copyrow"><input id="addr" readonly value="${esc(address)}" aria-label="Outpost's address"><button class="btn" type="button" id="copy" aria-label="Copy the address"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button></div>
           ${s.listen.local ? `<small class="muted">Or <code>http://${esc(s.listen.local)}:${s.listen.port}</code>. The number address can change when the router restarts.</small>` : ''}</div></div>
         ${s.listen.awake?.available ? `<label class="check admin-only"><input type="checkbox" id="awake"${s.listen.awake.on ? ' checked' : ''}> Keep this Mac awake while Outpost runs</label>` : ''}
-        <p class="muted small">Scanning opens <code>/join</code>, which also sets up <b>Locate me</b>. <a href="#guide">Setup guide</a></p>`;
+        <p class="muted small">Scanning opens <code>/join</code>, which also sets up <b>Locate me</b> and shows how to add Outpost to the home screen. <a href="#guide">Setup guide</a></p>`;
 
     body.innerHTML = `<div class="sos">
         <svg class="warn" viewBox="0 0 48 44" aria-hidden="true"><path d="M24 3 L46 41 H2 Z"/><path d="M24 16 v12" class="cut"/><circle cx="24" cy="34" r="2.4" class="dot"/></svg>
@@ -193,8 +195,9 @@ export async function viewHome(root) {
           <p class="muted small">Outpost uses ${fmtBytes(usedTotal)} in <code>${esc(s.storage.home)}</code>.</p></section>
         <section class="card panel sharepanel"><h2><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>Share Outpost</h2>${share}</section>
       </div>
-      <footer class="fieldfoot"><span>Offline today · stronger tomorrow</span><span>Outpost v${esc(s.version)}</span></footer>`;
+      <footer class="fieldfoot"><span>Offline today · stronger tomorrow</span><span>Outpost v${esc(s.version)}${s.released ? ` · updated ${new Date(`${s.released}T12:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}</span></footer>`;
 
+    $('.sos', body).after(vb.band);
     const qr = $('#qr', body);
     if (qr) {
       const { qrSvg } = await import('/vendor/qr.js');
@@ -231,9 +234,12 @@ export async function viewHome(root) {
   });
 
   await render();
-  // Re-render every 5 s, but not while someone is using a control on the page (it would lose focus).
+  // Re-render every 5 s, but not while someone is using a control on the page (it would lose focus) or holding Talk.
   const timer = setInterval(() => {
-    if (!body.contains(document.activeElement) || document.activeElement === body) render();
+    if ((!body.contains(document.activeElement) || document.activeElement === body) && !snapshot().recording) render();
   }, 5000);
-  return () => clearInterval(timer);
+  return () => {
+    clearInterval(timer);
+    vb.stop();
+  };
 }

@@ -10,7 +10,7 @@ export const COOKIE = 'outpost_session';
 const MAX_AGE = 30 * 86_400;
 
 /** Paths anyone may load before signing in: the login page and what it needs, and how a phone joins over HTTPS. */
-const PUBLIC = new Set(['/healthz', '/login.html', '/app.css', '/theme.js', '/favicon.ico', '/api/auth/login', '/api/auth/me', '/join', '/outpost-ca.crt']);
+const PUBLIC = new Set(['/healthz', '/login.html', '/app.css', '/theme.js', '/favicon.ico', '/api/auth/login', '/api/auth/me', '/join', '/outpost-ca.crt', '/manifest.webmanifest']);
 /** Folders of public look-and-feel files: the logo and the interface fonts (read-only, nothing private). */
 const PUBLIC_DIRS = ['/img/', '/vendor/fonts/'];
 
@@ -27,6 +27,8 @@ const MEMBER_CHANGES: [RegExp, string[]][] = [
   [/^\/api\/sos$/, ['POST']], // call for help (the board checks who may cancel)
   [/^\/api\/sos\/[^/]+\/ack$/, ['POST']],
   [/^\/api\/sos\/[^/]+$/, ['DELETE']],
+  [/^\/api\/voice$/, ['POST']], // send a voice message (the store checks who may delete)
+  [/^\/api\/voice\/[^/]+$/, ['DELETE']],
   [/^\/api\/auth\/(login|logout)$/, ['POST']],
   [/^\/api\/auth\/password$/, ['PUT']],
   [/^\/kolibri(\/|$)/, ['POST', 'PUT', 'PATCH', 'DELETE']], // Kolibri has its own accounts and checks

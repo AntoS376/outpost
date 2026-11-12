@@ -30,6 +30,15 @@ if (cmd === 'version') {
   }
   const labels = args.flatMap((a, i) => (args[i - 1] === '--label' ? [a] : []));
   const pub = args[args.indexOf('--publish') + 1].split(':');
+  if (state.containers.some((c) => c.ports.startsWith(`${pub[0]}:${pub[1]}->`))) {
+    // As the real one does: the container is made, then starting it fails.
+    state.containers.push({ name, image: args.at(-1), state: 'created', labels, ports: '', args });
+    save();
+    console.error(`docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint ${name} (abc): Bind for ${pub[0]}:${pub[1]} failed: port is already allocated`);
+    console.error('');
+    console.error("Run 'docker run --help' for more information");
+    process.exit(125);
+  }
   console.error(`Unable to find image '${args.at(-1)}' locally`);
   console.error('Status: Downloaded newer image');
   state.containers.push({ name, image: args.at(-1), state: 'running', labels, ports: `${pub[0]}:${pub[1]}->${pub[2]}/tcp`, args });

@@ -16,7 +16,7 @@ export function dockerRoutes(ctx: AppContext): Router {
     res.json({ restarting: ctx.restart() });
   });
   // The exact command a run would use, for the admin to read before confirming.
-  r.post('/preview', (req, res) => res.json(ctx.docker.preview(req.body?.spec ?? {})));
+  r.post('/preview', async (req, res) => res.json(await ctx.docker.preview(req.body?.spec ?? {})));
   r.post('/', async (req, res) => res.status(202).json({ job: await ctx.docker.start(req.body?.spec ?? {}, req.body?.confirm) }));
   r.post('/:name/:action', async (req, res) => {
     const action = String(req.params.action);

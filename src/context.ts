@@ -18,6 +18,8 @@ import type { SosBoard } from './services/sos.js';
 import type { RoutingService } from './services/routing.js';
 import type { DockerService } from './services/docker.js';
 import type { GpuMonitor } from './services/gpu.js';
+import type { InstallerService } from './services/installers.js';
+import type { VoiceStore } from './services/voice.js';
 
 export interface AppContext {
   cfg: Config;
@@ -41,6 +43,10 @@ export interface AppContext {
   routing: RoutingService;
   docker: DockerService;
   gpu: GpuMonitor;
+  /** Kolibri, CyberChef and map fonts, installed from their pages. */
+  installers: InstallerService;
+  /** Voice messages on one shared channel. */
+  voice: VoiceStore;
   /** Stops Outpost (the Shutdown button). Tests replace it. */
   requestShutdown: () => void;
   /** Restarts Outpost so new settings apply; false when it isn't running as a service. Tests replace it. */

@@ -55,7 +55,7 @@ export interface Config {
   updates: { repo: string; githubApi: string; registry: string };
   /** Protomaps list of planet builds; the newest is used for map extracts. */
   mapBuildsUrl: string;
-  dirs: { zim: string; maps: string; notes: string; docs: string; rag: string; assets: string; routing: string };
+  dirs: { zim: string; maps: string; notes: string; docs: string; rag: string; assets: string; routing: string; voice: string };
 }
 
 export type AiProviderKind = 'ollama' | 'openai-compatible';
@@ -132,6 +132,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       rag: path.join(home, 'rag'),
       assets: path.join(home, 'assets'),
       routing: path.join(home, 'routing'),
+      voice: path.join(home, 'voice'),
     },
   };
 }

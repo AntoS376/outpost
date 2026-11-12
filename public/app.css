@@ -19,6 +19,7 @@
   --warn: #99540f;
   --bad: #b5432a;
   --sos: #b5432a;
+  --voiceband: #2a5634;
   --sos-deep: #9c3820;
   --sos-ink: #fff8f0;
   /* Pine surfaces (code blocks, dialogs) and the cream text on them. */
@@ -157,14 +158,14 @@ a.card:hover, button.card:hover { transform: translateY(-2px); box-shadow: var(-
 .app { display: grid; grid-template-columns: 236px 1fr; height: 100dvh; }
 .rail {
   position: relative; display: flex; flex-direction: column; gap: 2px; padding: 20px 14px 16px;
-  background: var(--rail); color: var(--rail-ink); border-right: 1px solid var(--line); overflow: hidden;
+  background: var(--rail); color: var(--rail-ink); border-right: 1px solid var(--line); overflow: hidden auto;
 }
-.brand { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 0 6px 18px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
-.brand img { width: 88px; height: auto; }
+.brand { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 0 6px 14px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.brand img { width: 68px; height: auto; }
 .brand b { font: 700 24px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
 .brand small { font: 500 10px/1.5 var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
 .rail a, .railbtn {
-  display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px;
+  display: flex; align-items: center; gap: 12px; padding: 6px 12px; border-radius: 8px;
   color: inherit; text-decoration: none; font: 500 15px/1.2 var(--body);
   background: none; border: 0; cursor: pointer; text-align: left; width: 100%;
 }
@@ -172,6 +173,13 @@ a.card:hover, button.card:hover { transform: translateY(-2px); box-shadow: var(-
 .rail a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
 .rail svg { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .rail .spacer { flex: 1; }
+/* Sections: small capital headings, and Emergency as a red SOS bar at the top. */
+.railsec { margin: 10px 12px 3px; font: 600 10px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.rail a.railsos { margin-bottom: 4px; background: var(--sos); color: var(--sos-ink); font: 600 12px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.rail a.railsos:hover, .rail a.railsos[aria-current="page"] { background: var(--sos-deep); color: var(--sos-ink); }
+.rail .more { display: none; }
+/* On short screens the menu needs the room more than the picture does. */
+@media (max-height: 880px) { .rail svg.ridge { display: none; } }
 .rail .ridge { display: block; width: 100%; height: auto; margin: 8px 0 4px; color: var(--muted); opacity: 0.55; }
 #jobs-badge { margin-left: auto; min-width: 22px; padding: 1px 7px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); font: 600 12px/1.5 var(--mono); text-align: center; }
 .mainwrap { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; isolation: isolate; }
@@ -266,7 +274,7 @@ section.block:first-child { border-top: 0; padding-top: 4px; }
 .tips { margin: 0; padding-left: 20px; max-width: 70ch; }
 .tips li { margin: 0 0 8px; }
 code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; }
-code { background: var(--hover); padding: 1px 5px; border-radius: 5px; }
+code { background: var(--hover); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; } /* long paths and addresses wrap on phones */
 pre { background: var(--hover); padding: 12px; border-radius: 9px; overflow: auto; }
 pre code { background: none; padding: 0; }
 
@@ -363,8 +371,11 @@ details.tool .inner { padding: 0 0 20px 28px; max-width: 760px; }
 /* phones */
 @media (max-width: 860px) {
   .app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
-  .rail { order: 2; flex-direction: row; padding: 6px; gap: 2px; border-right: 0; border-top: 1px solid var(--line); overflow-x: auto; }
-  .topbar { padding: 10px 16px; font-size: 11px; letter-spacing: 0.18em; }
+  /* iPhones with rounded corners and a home indicator: keep the bar clear of both (zero elsewhere). */
+  .rail { order: 2; flex-direction: row; padding: 6px max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); gap: 2px; border-right: 0; border-top: 1px solid var(--line); overflow-x: auto; }
+  .topbar { padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left)); font-size: 11px; letter-spacing: 0.18em;
+    /* Solid on phones: the frosted blur reads as a smudge behind the status bar and can soften the bar's own text. */
+    background: var(--bg); backdrop-filter: none; }
   .brand, .rail .spacer, .rail .ridge, .whoami { display: none !important; }
   .topbar .quick span, .topbar .netpill, .topbar .netip { display: none !important; }
   .topbar .right { gap: 12px; } .topbar .sep { display: none; } .topbar #shutdown { margin-left: 0; }
@@ -372,20 +383,78 @@ details.tool .inner { padding: 0 0 20px 28px; max-width: 760px; }
   .rail a, .railbtn { flex-direction: column; gap: 3px; padding: 6px 0; font-size: 10px; letter-spacing: -0.02em; width: auto; min-width: 0; flex: 1 1 0; justify-content: center; text-align: center; }
   #jobs-badge { position: absolute; margin: 0; transform: translate(14px, -8px); }
   .railbtn { position: relative; }
-  main, main.fill { padding: 18px 16px 24px; }
+  main, main.fill { padding: 18px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left)); }
   main.fill { overflow: auto; display: block; }
   main.fill > .page { display: block; }
   .chat, .maps, .notes { display: block; }
   .chat-main { min-height: 70vh; }
   .side { border-left: 0; padding-left: 0; margin-top: 22px; }
   .mapwrap { height: 55vh; margin-bottom: 18px; }
-  .frame { height: 75vh; }
+  .frame { flex: none; height: 75vh; }
   .editor textarea { min-height: 50vh; }
-  #tray { bottom: 74px; }
+  #tray, #toasts { bottom: calc(74px + env(safe-area-inset-bottom)); }
   .titlebar { margin-bottom: 14px; }
+  .rail a:not([data-tab]), .rail .railsec, #jobs-btn { display: none !important; }
+  .rail .more { display: flex; order: 6; position: relative; }
+  .rail a.railsos { order: 5; margin: 0; background: none; color: var(--sos); font: 600 10px/1.2 var(--body); letter-spacing: -0.02em; text-transform: none; }
+  .rail a.railsos svg { box-sizing: content-box; padding: 3px; border-radius: 50%; background: var(--sos); color: var(--sos-ink); width: 18px; height: 18px; }
+  .rail a.railsos:hover, .rail a.railsos[aria-current="page"] { background: var(--hover); color: var(--sos); }
+  body:has(#jobs-badge:not([hidden])) .rail .more::after { content: ""; position: absolute; top: 4px; left: calc(50% + 8px); width: 8px; height: 8px; border-radius: 50%; background: var(--sos); }
   /* Long labels get a short one on the bottom bar; the full one stays for screen readers. */
   .rail .label-full { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .rail .label-short { display: inline; }
+}
+/* More (phones): every section under the same headings as the desktop menu, sliding up above the bottom bar. */
+.moresheet { position: fixed; left: 0; right: 0; bottom: var(--barh, 60px); z-index: 25; max-height: min(75dvh, 560px); overflow: auto; padding: 8px 16px 16px;
+  background: var(--panel); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.18); }
+.moresheet .railsec { margin: 14px 0 6px; }
+.moresheet .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.moresheet .chips a, .moresheet .chips button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--ink); font: 500 14px/1.2 var(--body); text-decoration: none; cursor: pointer; }
+.moresheet .chips [aria-current="page"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.moresheet svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.moresheet .grab { width: 40px; height: 4px; margin: 2px auto 0; border-radius: 2px; background: var(--line); }
+@media (min-width: 861px) { .moresheet { display: none !important; } }
+/* Voice messages: a big hold-to-talk button and the channel as compact rows. */
+.voicebox { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 22px 18px; margin-bottom: 22px; }
+.voice-talk { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 168px; height: 168px; border-radius: 50%;
+  border: 2px solid var(--accent); background: var(--panel); color: var(--ink); font: 600 13px/1.3 var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.voice-talk .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); }
+.voice-talk.on { border-color: var(--sos); background: var(--sos); color: var(--sos-ink); }
+.voice-talk.on .dot { background: var(--sos-ink); animation: voicepulse 1s ease-in-out infinite; }
+@keyframes voicepulse { 50% { transform: scale(0.6); } }
+.voicelist { list-style: none; margin: 0; padding: 0; }
+/* Base station: on wide screens, who is on the channel sits beside the big button. */
+.voicegrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 18px; align-items: start; margin-bottom: 22px; }
+.voicegrid .voicebox { margin-bottom: 0; }
+.voiceon { padding: 18px 20px; }
+.voiceon h2 { margin: 0 0 10px; font-size: 15px; }
+.voicepeople { list-style: none; margin: 0 0 10px; padding: 0; }
+.voicepeople li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.voicepeople .grow { display: flex; flex-direction: column; min-width: 0; }
+@media (max-width: 860px) { .voicegrid { grid-template-columns: minmax(0, 1fr); } }
+.voicelist li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.voicelist .grow { flex: 1; min-width: 0; }
+.voicelist li.new strong { color: var(--accent); }
+.voicelist li.playing { background: var(--hover); }
+/* The mic button on every page (not on Voice, which has the big one): tap to turn voice on, then hold to talk. */
+.voicefab { position: fixed; right: 22px; bottom: 22px; z-index: 22; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  border: 2px dashed var(--muted); background: var(--panel); color: var(--muted); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); cursor: pointer;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.voicefab svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.voicefab.on { border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+.voicefab.rec { border-color: var(--sos); background: var(--sos); color: var(--sos-ink); transform: scale(1.12); animation: voicepulse 1s ease-in-out infinite; }
+.voicefab.cancel { opacity: 0.55; animation: none; }
+.voicefab.paused { box-shadow: 0 0 0 4px var(--warn), 0 4px 16px rgba(0, 0, 0, 0.18); }
+body[data-route="voice"] .voicefab { display: none; }
+.vbadge, .navbadge { min-width: 18px; padding: 1px 5px; border-radius: 99px; background: var(--sos); color: var(--sos-ink); font: 700 11px/1.4 var(--mono); text-align: center; }
+.vbadge { position: absolute; top: -4px; right: -4px; }
+.rail .navbadge { margin-left: auto; }
+/* Phones: the mic button sits just above the bottom bar, clear of the iPhone home indicator. */
+@media (max-width: 860px) {
+  .voicefab { right: 16px; bottom: calc(82px + env(safe-area-inset-bottom)); width: 52px; height: 52px; }
+  .rail .more .navbadge { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; }
 }
 /* Emergency */
 .em-sos { border-top: 0; padding-top: 0; }
@@ -476,17 +545,17 @@ table.radio th { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .guide-body pre { background: var(--olive-deep); color: var(--on-olive); padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
 .guide-body li { margin: 0 0 6px; }
 .guide > * { min-width: 0; }
-.guide-body :not(pre) > code { overflow-wrap: anywhere; }
 @media (max-width: 860px) { .guide { grid-template-columns: minmax(0, 1fr); } .guide-toc { position: static; } }
 @media print { .guide { display: block; } .guide-toc { display: none; } .guide-body pre { background: none; color: #000; border: 1px solid #999; } }
 
 /* Apps shelf */
-.appgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+/* Every card in a grid is as tall as the tallest one, with its footer (licence, buttons) at the bottom. */
+.appgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); grid-auto-rows: 1fr; gap: 16px; }
 .appcard { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 .appcard header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .appcard h2 { margin: 0; font-size: 18px; }
 .appcard p { margin: 0; }
-.appcard .meta { font-size: 13px; color: var(--muted); }
+.appcard .meta { font-size: 13px; color: var(--muted); margin-top: auto; padding-top: 6px; }
 .appcard .row { margin-top: 6px; }
 .appcard pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 /* Games: the list, the solitaire table and the Sudoku grid. Card faces stay light in both themes. */
@@ -636,7 +705,6 @@ body:not([data-role="member"]) .member-only { display: none; }
 
 /* Home: field header, SOS band, main cards, slim tiles, lower panels */
 .fieldhead { display: flex; align-items: center; gap: 18px; padding: 0 0 22px; margin: 0 0 22px; border-bottom: 1px solid var(--line); }
-.fieldhead img { width: 92px; height: auto; flex: none; }
 .fieldhead .word h1 { font-size: 48px; line-height: 0.95; letter-spacing: 0.06em; margin: 0; }
 .fieldhead .word span { display: block; margin-top: 6px; font: 600 12.5px/1.3 var(--mono); letter-spacing: 0.2em; text-transform: uppercase; }
 .fieldhead .motto { margin: 0 0 0 10px; padding-left: 22px; border-left: 1px solid var(--line); line-height: 1.75; }
@@ -658,6 +726,30 @@ body:not([data-role="member"]) .member-only { display: none; }
 .sosbtn:hover { background: #fff; transform: translateY(-1px); }
 .sosbtn:focus-visible, .sostitle:focus-visible, .sosalert .btn:focus-visible { outline: 3px solid var(--sos-ink); outline-offset: 3px; }
 .sosbtn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+.voiceband {
+  display: grid; grid-template-columns: auto auto 1fr auto auto; align-items: center; gap: 18px; padding: 12px 22px; margin: -10px 0 22px;
+  border-radius: 10px; background: var(--voiceband); color: #f2ecdc; box-shadow: var(--shadow);
+}
+.vbicon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(242, 236, 220, 0.14); }
+.vbicon svg, .vbtalk svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.vbtitle { color: inherit; text-decoration: none; }
+.vbtitle:hover strong { text-decoration: underline; text-underline-offset: 4px; }
+.vbtitle strong { display: block; font: 700 19px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.vbtitle span { display: block; margin-top: 5px; font: 600 11px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
+.vbstatus { padding-left: 18px; border-left: 1px solid rgba(242, 236, 220, 0.3); font: 600 12.5px/1.4 var(--mono); letter-spacing: 0.04em; opacity: 0.95; }
+.vbstatus > span { white-space: nowrap; }
+.vbstatus i { margin: 0 8px; font-style: normal; opacity: 0.6; }
+.vbstatus b { padding: 2px 7px; border-radius: 4px; background: #f2ecdc; color: var(--voiceband); }
+.vbact small { display: block; max-width: 26ch; font-size: 12.5px; line-height: 1.35; opacity: 0.9; }
+.vbtalk { display: inline-flex; align-items: center; gap: 9px; padding: 10px 18px; border: 0; border-radius: 8px; cursor: pointer; background: #f2ecdc; color: var(--voiceband);
+  font: 700 14px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.vbtalk:hover { background: #fff; }
+.vbtalk .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.vbtalk.rec { background: var(--sos); color: var(--sos-ink); }
+.vbtalk.rec .dot { animation: voicepulse 1s ease-in-out infinite; }
+.vbopen { color: inherit; font: 600 12px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; text-underline-offset: 4px; }
+.vbtalk:focus-visible, .vbtitle:focus-visible, .vbopen:focus-visible { outline: 3px solid #f2ecdc; outline-offset: 3px; }
+body[data-route="home"] .voicefab { display: none; }
 .attention { margin-bottom: 22px; }
 .primaries { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0 0 16px; }
 .primary { display: flex; flex-direction: column; padding: 18px 20px 18px; color: var(--ink); text-decoration: none; }
@@ -727,6 +819,8 @@ img.engrave[src$="assistant.png"] { max-height: 112px; }
   .primaries { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sos { grid-template-columns: auto 1fr auto; }
   .sostext { display: none; }
+  .voiceband { grid-template-columns: auto auto 1fr auto; }
+  .vbopen { display: none; }
 }
 @media (max-width: 860px) {
   .slimgroups { grid-template-columns: minmax(0, 1fr); }
@@ -743,7 +837,6 @@ img.engrave[src$="assistant.png"] { max-height: 112px; }
 }
 @media (max-width: 560px) {
   .fieldhead { gap: 12px; }
-  .fieldhead img { width: 64px; }
   .fieldhead .word h1 { font-size: 34px; }
   .fieldhead .word span { font-size: 10.5px; letter-spacing: 0.14em; }
   .sos { grid-template-columns: auto 1fr; gap: 14px; padding: 16px; }
@@ -751,6 +844,13 @@ img.engrave[src$="assistant.png"] { max-height: 112px; }
   .sostitle strong { font-size: 21px; }
   .sostitle span { font-size: 10.5px; }
   .sosbtn { grid-column: 1 / -1; justify-content: center; }
+  .voiceband { grid-template-columns: auto 1fr auto; gap: 10px 12px; padding: 12px 14px; margin-top: -8px; }
+  .vbicon { width: 34px; height: 34px; }
+  .vbtitle strong { font-size: 16px; }
+  .vbstatus { grid-column: 1 / -1; grid-row: 2; padding-left: 0; border-left: 0; font-size: 11.5px; }
+  .vbact { grid-column: 1 / -1; grid-row: 3; }
+  .vbtalk { width: 100%; justify-content: center; padding: 13px; }
+  .vbopen { display: inline; grid-column: 3; grid-row: 1; }
   .primaries, .slims, .lower { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .slimgroups { gap: 20px; }
   .primary .ptop { height: 90px; margin-bottom: 8px; }
@@ -782,6 +882,9 @@ img.engrave[src$="assistant.png"] { max-height: 112px; }
 
 /* Sign-in page */
 .login-page { min-height: 100dvh; background: var(--bg) url(/img/paper.jpg) right top / cover no-repeat fixed; }
+/* Phones: fit the paper to the screen's width, so the tower stays small in the top corner instead of
+   being stretched over the whole page behind the text (iPhones don't keep a fixed background in place). */
+@media (max-width: 860px) { .login-page { background-attachment: scroll; background-size: 100% auto; } }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .login-page { background: var(--bg) var(--contour); } }
 :root[data-theme="dark"] .login-page { background: var(--bg) var(--contour); }
 .login { max-width: 380px; margin: 0 auto; padding: 12vh 20px 40px; }

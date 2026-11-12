@@ -1,4 +1,4 @@
-import { $, api, esc, toast } from './core.js';
+import { $, api, esc, installAddon, toast } from './core.js';
 import { CALCULATOR, CONVERTER } from './calculator.js';
 
 const bytesToBinary = (bytes) => [...bytes].map((b) => String.fromCharCode(b)).join('');
@@ -167,6 +167,14 @@ const TOOLS = [
   },
 ];
 
+/** The other entries under CyberChef: pages of their own. */
+const MORE = `<li><span class="lamp ok" role="img" aria-label="Available"></span><div><strong>Accounts</strong><p>Who can sign in, admins and members, your password.</p></div>
+    <div><a class="btn" href="#account">Open</a></div></li>
+    <li><span class="lamp ok" role="img" aria-label="Available"></span><div><strong>Updates</strong><p>Opt-in: look for newer Outpost, book and model versions once a day. Off unless you turn it on.</p></div>
+    <div><a class="btn" href="#updates">Open</a></div></li>
+    <li><span class="lamp ok" role="img" aria-label="Available"></span><div><strong>Benchmark</strong><p>How fast this Mac handles hashing, compression, disk, memory and AI. Results stay on this Mac.</p></div>
+    <div><a class="btn" href="#benchmark">Open</a></div></li>`;
+
 export async function viewTools(root) {
   root.innerHTML = `<h1>Tools</h1><p class="lead">Calculators, a unit converter and other small utilities that run in this page. Nothing you type is sent anywhere.</p>
     <div id="cyberchef"></div>
@@ -186,16 +194,32 @@ export async function viewTools(root) {
   });
   $('details', root).open = true;
 
-  // CyberChef: GCHQ's toolkit for encoding, encryption, compression and data analysis, served by Outpost if fetched.
-  const version = await api('/status').then((s) => s.tools.cyberchef, () => null);
-  $('#cyberchef', root).innerHTML = `<ul class="ready"><li><span class="lamp ${version ? 'ok' : 'idle'}" role="img" aria-label="${version ? 'Installed' : 'Not installed'}"></span>
-    <div><strong>CyberChef</strong> <span class="muted">${version ? esc(version) : 'not installed'}</span>
-      <p>Hundreds of operations for encoding, encryption, compression, hashing and data analysis, running offline in your browser.${version ? '' : ' To add it, run <code>./scripts/fetch-cyberchef.sh</code> in Terminal in the Outpost folder (about 80 MB), then reload.'}</p></div>
-    <div>${version ? '<a class="btn primary" href="/tools/cyberchef/" target="_blank" rel="noopener">Open CyberChef</a>' : ''}</div></li>
-    <li><span class="lamp ok" role="img" aria-label="Available"></span><div><strong>Accounts</strong><p>Who can sign in, admins and members, your password.</p></div>
-    <div><a class="btn" href="#account">Open</a></div></li>
-    <li><span class="lamp ok" role="img" aria-label="Available"></span><div><strong>Updates</strong><p>Opt-in: look for newer Outpost, book and model versions once a day. Off unless you turn it on.</p></div>
-    <div><a class="btn" href="#updates">Open</a></div></li>
-    <li><span class="lamp ok" role="img" aria-label="Available"></span><div><strong>Benchmark</strong><p>How fast this Mac handles hashing, compression, disk, memory and AI. Results stay on this Mac.</p></div>
-    <div><a class="btn" href="#benchmark">Open</a></div></li></ul>`;
+  // CyberChef: GCHQ's toolkit for encoding, encryption, compression and data analysis, served by Outpost once installed.
+  const box = $('#cyberchef', root);
+  let poll = null;
+  async function paintCyberChef() {
+    const [version, install] = await Promise.all([api('/status').then((s) => s.tools.cyberchef, () => null), api('/install/cyberchef').catch(() => ({ job: null }))]);
+    const action = version
+      ? '<a class="btn primary" href="/tools/cyberchef/" target="_blank" rel="noopener">Open CyberChef</a>'
+      : install.job
+        ? '<button class="btn primary" type="button" disabled>Installing…</button>'
+        : '<button class="btn primary admin-only" type="button" id="cc-install">Install</button>';
+    const note = version ? '' : install.job ? ` ${esc(install.job.message || 'Starting')}. Follow it under Transfers.` : ' About 80 MB.<span class="member-only"> An admin can install it here.</span>';
+    box.innerHTML = `<ul class="ready"><li><span class="lamp ${version ? 'ok' : 'idle'}" role="img" aria-label="${version ? 'Installed' : 'Not installed'}"></span>
+    <div><strong>CyberChef</strong> <span class="muted">${version ? esc(version) : install.job ? 'installing' : 'not installed'}</span>
+      <p>Hundreds of operations for encoding, encryption, compression, hashing and data analysis, running offline in your browser.${note}</p></div>
+    <div>${action}</div></li>${MORE}</ul>`;
+    clearTimeout(poll);
+    if (install.job && box.isConnected) poll = setTimeout(paintCyberChef, 2500);
+  }
+  box.addEventListener('click', async (e) => {
+    if (e.target.id !== 'cc-install') return;
+    const why = 'Outpost downloads the pinned CyberChef release from GitHub, keeps it only if its SHA-256 matches, and serves it here behind the same sign-in.';
+    try {
+      if (await installAddon('cyberchef', 'CyberChef', why)) paintCyberChef();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+  await paintCyberChef();
 }

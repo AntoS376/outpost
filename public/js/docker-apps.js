@@ -37,7 +37,7 @@ export function mountDocker(host, confirmCommand) {
     return `<form id="dkform" class="appform"><h3 class="wide">Run a Docker app</h3>
         <p class="wide muted small">Find apps: ${FIND.map(([name, url]) => `<a href="${url}" target="_blank" rel="noopener">${name}</a>`).join(' · ')}. Stick to images from sources like these; each app's page lists the port and folders to fill in below.</p>
         <div><label for="dk-image">Image</label><input id="dk-image" required maxlength="255" spellcheck="false" autocapitalize="none" placeholder="e.g. nginx:1.27"></div>
-        <div><label for="dk-name">Short name</label><input id="dk-name" required maxlength="32" pattern="[a-z0-9][a-z0-9-]*" spellcheck="false" autocapitalize="none" placeholder="e.g. web"></div>
+        <div><label for="dk-name">Short name</label><input id="dk-name" required maxlength="32" pattern="[a-z0-9][a-z0-9\\-]*" spellcheck="false" autocapitalize="none" placeholder="e.g. web"></div>
         <div><label for="dk-port">App's port in the container</label><input id="dk-port" type="number" min="1" max="65535" required placeholder="e.g. 80"></div>
         <div><label for="dk-host">Port on this Mac</label><input id="dk-host" type="number" min="1024" max="65535" required placeholder="e.g. 8100"></div>
         <div class="wide"><label>Settings (environment variables)</label><div id="dk-env"></div><button class="btn small" type="button" data-add="env">Add a setting</button></div>

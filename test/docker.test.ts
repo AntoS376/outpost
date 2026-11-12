@@ -49,7 +49,9 @@ async function setup(env: Record<string, string>) {
   };
 }
 
-const spec = { image: 'nginx:1.27', name: 'web', port: 80, hostPort: 8100, env: [{ key: 'TZ', value: 'Asia/Beirut' }], folders: [{ folder: 'html', target: '/usr/share/nginx/html', readOnly: true }] };
+// A port that is free on this Mac now, since Outpost checks the port before it runs anything.
+const hostPort = await freePort();
+const spec = { image: 'nginx:1.27', name: 'web', port: 80, hostPort, env: [{ key: 'TZ', value: 'Asia/Beirut' }], folders: [{ folder: 'html', target: '/usr/share/nginx/html', readOnly: true }] };
 
 describe('docker apps', () => {
   it('stays off, running nothing, unless OUTPOST_DOCKER=1', async () => {
@@ -172,10 +174,10 @@ describe('docker apps', () => {
       const html = path.join(t.h, 'containers', 'web', 'html');
       assert.equal(
         command,
-        `${t.docker} run --detach --name outpost-web --label com.outpost.managed=true --label com.outpost.name=web --restart unless-stopped --publish 127.0.0.1:8100:80 --env TZ=Asia/Beirut --mount type=bind,source=${html},target=/usr/share/nginx/html,readonly nginx:1.27`,
+        `${t.docker} run --detach --name outpost-web --label com.outpost.managed=true --label com.outpost.name=web --restart unless-stopped --publish 127.0.0.1:${hostPort}:80 --env TZ=Asia/Beirut --mount type=bind,source=${html},target=/usr/share/nginx/html,readonly nginx:1.27`,
       );
-      assert.equal(url, 'http://localhost:8100/');
-      assert.equal((await t.call('anna', '/api/docker', 'POST', { spec: { ...spec, hostPort: 8101 }, confirm: command })).status, 409, 'what runs is what was shown');
+      assert.equal(url, `http://localhost:${hostPort}/`);
+      assert.equal((await t.call('anna', '/api/docker', 'POST', { spec: { ...spec, hostPort: hostPort + 1 }, confirm: command })).status, 409, 'what runs is what was shown');
 
       const started = await t.call('anna', '/api/docker', 'POST', { spec, confirm: command });
       assert.equal(started.status, 202);
@@ -189,7 +191,7 @@ describe('docker apps', () => {
       assert.ok(fs.statSync(html).isDirectory(), 'its folder was made');
       assert.equal(fs.statSync(path.join(t.h, 'containers', 'web')).mode & 0o777, 0o700);
 
-      assert.deepEqual((await t.call('anna', '/api/docker')).json.containers, [{ name: 'web', image: 'nginx:1.27', state: 'running', status: 'Up 2 minutes', hostPort: 8100 }]);
+      assert.deepEqual((await t.call('anna', '/api/docker')).json.containers, [{ name: 'web', image: 'nginx:1.27', state: 'running', status: 'Up 2 minutes', hostPort }]);
       assert.equal((await t.call('anna', '/api/docker', 'POST', { spec, confirm: command })).status, 409, 'one per name');
 
       assert.equal((await t.call('anna', '/api/docker/web/stop', 'POST')).status, 200);
@@ -211,6 +213,37 @@ describe('docker apps', () => {
       assert.deepEqual(t.fake().containers.map((c) => c.name).sort(), ['outpost-mine', 'web'], 'the others are untouched');
       assert.ok(!t.fake().calls.some((c) => ['stop', 'start', 'rm', 'logs'].includes(c[0]!) && !c.includes('outpost-web')));
     } finally {
+      await t.close();
+    }
+  });
+
+  it('says plainly when the port on this Mac is taken, and leaves no half-made container behind', async () => {
+    const t = await setup({ OUTPOST_DOCKER: '1' });
+    const other = http.createServer();
+    try {
+      const port = await listen(other);
+      const busy = await t.call('anna', '/api/docker/preview', 'POST', { spec: { ...spec, hostPort: port } });
+      assert.equal(busy.status, 409);
+      assert.match(busy.json.error, new RegExp(`Port ${port} on this Mac is already in use`));
+
+      // Taken between the check and the run (here by a container the fake engine holds): docker run fails part way.
+      const run = async (s: typeof spec) => {
+        const { command } = (await t.call('anna', '/api/docker/preview', 'POST', { spec: s })).json;
+        const started = await t.call('anna', '/api/docker', 'POST', { spec: s, confirm: command });
+        return waitFor(async () => {
+          const j = (await t.call('anna', '/api/jobs')).json.jobs.find((x: any) => x.id === started.json.job.id);
+          return j.status !== 'running' && j;
+        });
+      };
+      assert.equal((await run(spec)).status, 'done');
+      const clash = await run({ ...spec, name: 'web2' });
+      assert.equal(clash.status, 'error');
+      assert.equal(clash.error, `Port ${hostPort} on this Mac is already in use by another program. Choose another port.`);
+      assert.doesNotMatch(clash.message, /--help/);
+      assert.deepEqual((await t.call('anna', '/api/docker')).json.containers.map((c: any) => c.name), ['web']);
+      assert.deepEqual(t.fake().containers.map((c) => c.name).sort(), ['outpost-mine', 'outpost-web', 'web'], 'only its own half-made container went');
+    } finally {
+      other.close();
       await t.close();
     }
   });

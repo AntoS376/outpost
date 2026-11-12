@@ -3,8 +3,10 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 
-/** Outpost's own version, from package.json. */
-export const OUTPOST_VERSION: string = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+/** Outpost's own version and the date it was last updated (YYYY-MM-DD), from package.json. */
+export const OUTPOST_VERSION: string = pkg.version;
+export const OUTPOST_RELEASED: string = pkg.released ?? '';
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {

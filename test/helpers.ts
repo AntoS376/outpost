@@ -196,7 +196,7 @@ export function mockFiles(): http.Server {
     if (u.pathname === '/repos/someone/outpost/releases/latest') {
       remoteCalls.github++;
       res.setHeader('Content-Type', 'application/json');
-      return void res.end(JSON.stringify({ tag_name: 'v0.2.0', name: 'Outpost 0.2.0', html_url: 'https://github.com/someone/outpost/releases/tag/v0.2.0', published_at: '2026-10-01T00:00:00Z' }));
+      return void res.end(JSON.stringify({ tag_name: 'v2.1.0', name: 'Outpost 2.1.0', html_url: 'https://github.com/someone/outpost/releases/tag/v2.1.0', published_at: '2026-10-01T00:00:00Z' }));
     }
     // Fake Ollama registry: llama3.2:3b has a newer manifest; nomic-embed-text is the same as installed.
     if (u.pathname.startsWith('/v2/')) {

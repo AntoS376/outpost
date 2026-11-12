@@ -33,11 +33,11 @@ curl -fsSL https://raw.githubusercontent.com/AntoS376/outpost/main/scripts/insta
 
 **Installing from the code instead** (for example **Code → Download ZIP**): put the folder somewhere like `~/Developer/outpost`, not `~/outpost` (macOS ignores upper and lower case, so that would be the same folder as your data folder `~/Outpost`, and setup refuses to run). Then run `./scripts/setup-mac.sh --pull-models` in that folder. Leave out `--pull-models` to choose AI models later.
 
-Optional extras, each a single command in the same folder:
+Optional extras, each a single command in the same folder (an admin can also install map fonts, CyberChef and Kolibri with a button in Outpost):
 
-- `./scripts/fetch-map-assets.sh`: fonts, so maps show place names.
-- `./scripts/fetch-cyberchef.sh`: CyberChef, a toolbox for encoding and decoding data.
-- `./scripts/install-kolibri.sh`: Kolibri, for courses and exercises on the Education page.
+- `./scripts/fetch-map-assets.sh`: fonts, so maps show place names. Or click **Install map fonts** on the Maps page.
+- `./scripts/fetch-cyberchef.sh`: CyberChef, a toolbox for encoding and decoding data. Or click **Install** on the Tools page.
+- `./scripts/install-kolibri.sh`: Kolibri, for courses and exercises on the Education page. Or click **Install Kolibri** there.
 
 Everything you download lives in the `Outpost` folder in your home folder (`~/Outpost`). Your settings are in `~/.config/outpost/env`.
 
@@ -141,7 +141,10 @@ Connect the Mac and every other device to the hotspot, then use the address show
 3. **Turn off mobile data** if Outpost won't load. Some phones send everything over mobile data when the Wi-Fi has no internet.
 4. Or open the browser and type the address exactly, with `http://` and `:8080`, for example `http://192.168.2.1:8080`. On iPhones and Macs, the Mac's name also works, like `http://my-mac.local:8080` (shown in **Home → Sharing**).
 5. Sign in with the account the admin made for you.
-6. Bookmark it, or use **Add to Home Screen**, so you don't need to type it again.
+6. Add Outpost to the home screen, so it opens like an app with Outpost's tower icon and you don't need to type the address again. The join page shows the same steps.
+   - **iPhone and iPad (Safari):** tap **Share** (the square with an arrow), then **Add to Home Screen**, keep the name **Outpost**, and tap **Add**.
+   - **Android (Chrome):** tap the **⋮** menu, then **Add to Home screen** or **Install app**, then **Install**. Chrome installs it as an app only over Outpost's secure `https://…:8443` address (set up on the join page); over plain `http://` it adds a shortcut.
+   - **Mac:** in Safari, **File → Add to Dock…**; in Chrome, **⋮ → Cast, save and share → Install page as app**.
 
 ## 6. Knowing where you are
 
@@ -193,8 +196,19 @@ Press **Send SOS** on the red strip at the top of Home, or on **Emergency → Si
 - Phones and computers only play sounds after the page has been touched once. Keep Outpost open, and tap it once, on the devices that should ring.
 - It's kept in Outpost's memory only, never saved to disk. It reaches people on this Outpost, not emergency services: call your local emergency number too if you can.
 
+### Voice messages
+
+Short voice messages for everyone on this Outpost, like a walkie-talkie that remembers. Open **Voice** (under Be ready; on phones, **More → Voice**), use the green **Voice channel** band on Home (under Emergency SOS: who is listening, what is new, and **Hold to talk**), or the round mic button in the corner of every other page.
+
+- Tap the mic button once and allow the microphone. It turns green. Do this each time you open Outpost: browsers only allow the microphone and sound after a tap.
+- Hold the button (or the space bar on a computer), talk, and let go to send. Slide your finger off before letting go to cancel. Up to 60 seconds.
+- New messages from others play by themselves while voice is on. If you missed some, the mic button and Voice show a red count; open Voice and tap **Play new**.
+- It needs the secure address on phones (`https://…:8443`, set up on the join page). Messages are kept for 24 hours, on this Mac only.
+
 ## 7. Day to day
 
+- **Finding your way:** on a computer, the menu on the left groups the pages under Know, Ask and find, Be ready and Keep, with the red SOS bar on top. On a phone, the bar at the bottom has Home, Library, Chat, Maps, SOS and **More**; More opens everything else, plus Transfers and your account.
+- **Choosing the AI model:** on the **Assistant** page, pick the model at the top. `llama3.2:3b` gives good answers on most Macs; smaller models answer faster but less well. Each device remembers its own pick, so choose once on each phone.
 - **Top bar:** on the left, whether Outpost is running, the Mac's battery and Wi-Fi; on the right, Help, Light/Dark, Settings and (for admins) Shutdown. The battery shows only on a Mac laptop: it turns green with a lightning bolt when plugged in and red below 20% on battery; point at it to see the time left.
 - **Light or dark:** the switch in the top bar (next to Help: a half-filled circle for Auto, a sun for Light, a moon for Dark) goes Auto → Light → Dark. Auto follows the device's own setting. Each device remembers its own choice, and the map and the book reader follow it.
 - **Docker apps (optional, admins):** to run ready-made apps from Docker images, install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [OrbStack](https://orbstack.dev/download), then on **Apps → Docker apps** press **Turn on Docker apps** (Outpost saves it and restarts itself; if it isn't installed as a background service, quit and start it again). Then fill in the image, a short name and the ports, and press **Review the command**; nothing runs until you've read the exact command and chosen **Run it**. Each app opens on this Mac only, and sees only its own folder in `~/Outpost/containers`. Use images you trust.

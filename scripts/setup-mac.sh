@@ -54,14 +54,28 @@ mkdir -p "$OUTPOST_HOME/bin"
 if [ -x "$OUTPOST_HOME/bin/kiwix-serve" ] || command -v kiwix-serve >/dev/null 2>&1; then
   echo "kiwix-serve already installed."
 else
-  case "$(uname -m)" in arm64) ARCH=arm64 ;; *) ARCH=x86_64 ;; esac
-  URL="https://download.kiwix.org/release/kiwix-tools/kiwix-tools_macos-$ARCH.tar.gz"
+  # Homebrew has no kiwix-tools formula, so the official macOS build is the only route. Kiwix's own server can be
+  # very slow from some networks, so official mirrors go first; any that crawls below 50 KB/s is dropped for the next.
+  # SHA-256 of the files Kiwix publishes (they match its .md5 files).
+  case "$(uname -m)" in
+    arm64) ARCH=arm64; SHA=5c64d43176627e558a117146b02ea36b7da2b0cd3a332cbff075cde05d9585f9 ;;
+    *) ARCH=x86_64; SHA=ae341280e97ad5902e7a4282a24340eac7d7061c267661c0ef2a88a34547f247 ;;
+  esac
+  FILE="release/kiwix-tools/kiwix-tools_macos-$ARCH-3.8.2.tar.gz"
   TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-  # Homebrew has no kiwix-tools formula, so the official macOS build is the only route.
-  curl -fL --progress-bar -o "$TMP/kt.tar.gz" "$URL" && tar -xzf "$TMP/kt.tar.gz" -C "$TMP" ||
-    die "Could not download kiwix-serve from $URL. Check your connection, or download kiwix-tools for macOS from https://download.kiwix.org/release/kiwix-tools/ and put kiwix-serve in $OUTPOST_HOME/bin/"
+  GOT=""
+  for MIRROR in https://ftp.fau.de/kiwix https://mirrors.dotsrc.org/kiwix https://download.kiwix.org; do
+    echo "Downloading from $MIRROR"
+    if curl -fL --progress-bar --connect-timeout 15 --speed-limit 50000 --speed-time 20 -o "$TMP/kt.tar.gz" "$MIRROR/$FILE" &&
+      [ "$(shasum -a 256 "$TMP/kt.tar.gz" | cut -d' ' -f1)" = "$SHA" ]; then
+      GOT="$MIRROR/$FILE"; break
+    fi
+    echo "That didn't work; trying the next mirror."
+  done
+  [ -n "$GOT" ] && tar -xzf "$TMP/kt.tar.gz" -C "$TMP" ||
+    die "Could not download kiwix-serve. Check your connection, or download kiwix-tools 3.8.2 for macOS from https://download.kiwix.org/release/kiwix-tools/ and put kiwix-serve in $OUTPOST_HOME/bin/"
   BIN="$(find "$TMP" -type f -name kiwix-serve | head -1)"
-  [ -n "$BIN" ] || die "kiwix-serve was not found in the download from $URL"
+  [ -n "$BIN" ] || die "kiwix-serve was not found in the download from $GOT"
   cp "$BIN" "$OUTPOST_HOME/bin/kiwix-serve"; chmod +x "$OUTPOST_HOME/bin/kiwix-serve"
   # In case the file was quarantined (e.g. copied from a browser download), clear the flag so it can run.
   xattr -d com.apple.quarantine "$OUTPOST_HOME/bin/kiwix-serve" 2>/dev/null || true

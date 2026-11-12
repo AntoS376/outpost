@@ -27,10 +27,14 @@ import { dockerRoutes } from './routes/docker.js';
 import { GpuMonitor } from './services/gpu.js';
 import { kiwixProxy, kolibriProxy } from './proxy.js';
 import { KolibriService } from './services/kolibri.js';
+import { InstallerService } from './services/installers.js';
+import { VoiceStore } from './services/voice.js';
 import { PlaceIndex } from './services/places.js';
 import { Benchmark } from './services/benchmark.js';
 import { benchmarkRoutes } from './routes/benchmark.js';
 import { educationRoutes } from './routes/education.js';
+import { installRoutes } from './routes/install.js';
+import { voiceRoutes } from './routes/voice.js';
 import { HttpError } from './util.js';
 import { KiwixService } from './services/process.js';
 import { JobManager } from './services/jobs.js';
@@ -83,6 +87,8 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
     notesFor: (user) => new NotesStore(path.join(cfg.dirs.notes, user)),
     chatsFor: (user) => new ChatStore(path.join(cfg.home, 'chats', user)),
     kolibri: new KolibriService(cfg),
+    installers: new InstallerService(cfg, jobs),
+    voice: new VoiceStore(cfg.dirs.voice),
     places: new PlaceIndex(cfg, jobs),
     benchmark: new Benchmark(cfg, ai),
     apps: new AppsService(cfg, jobs),
@@ -160,6 +166,8 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
   app.use('/api/ai', aiRoutes(ctx));
   app.use('/api/setup', setupRoutes(ctx));
   app.use('/api/education', educationRoutes(ctx));
+  app.use('/api/install', installRoutes(ctx));
+  app.use('/api/voice', voiceRoutes(ctx));
   app.use('/api/benchmark', benchmarkRoutes(ctx));
   app.use('/api/users', usersRoutes(ctx));
   app.use('/api/chats', chatsRoutes(ctx));
@@ -214,7 +222,7 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
     res.status(404).json({ error: 'Not found' });
   });
   app.use('/assets/fonts', express.static(path.join(cfg.dirs.assets, 'fonts')));
-  // CyberChef, if fetched with scripts/fetch-cyberchef.sh: static files, behind the same sign-in as everything else.
+  // CyberChef, once installed from Tools (scripts/fetch-cyberchef.sh): static files, behind the same sign-in as everything else.
   app.use('/tools/cyberchef', express.static(path.join(cfg.dirs.assets, 'cyberchef'), { index: 'index.html', dotfiles: 'deny' }));
   app.use('/tools/cyberchef', (_req, res) => {
     res
@@ -222,13 +230,15 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
       .type('html')
       .send(
         `<!doctype html><meta charset="utf-8"><title>CyberChef isn't installed</title><body style="font:16px system-ui;padding:2rem;max-width:36rem;margin:auto;color:#444">` +
-          `<h2>CyberChef isn't installed</h2><p>In Terminal, in the Outpost folder, run <code>./scripts/fetch-cyberchef.sh</code> (about 80 MB), then reload this page.</p>` +
+          `<h2>CyberChef isn't installed</h2><p>An admin can install it from Tools (about 80 MB), or run <code>./scripts/fetch-cyberchef.sh</code> in Terminal in the Outpost folder. Then reload this page.</p>` +
           `<p><a href="/#tools">Back to Tools</a></p></body>`,
       );
   });
   // The setup guide: one Markdown file, read on GitHub before installing and in the app (Guide page) after.
   app.get('/guide.md', (_req, res) => res.type('text/markdown; charset=utf-8').sendFile(guideFile));
   app.use(express.static(publicDir));
+  // Browsers (Safari especially) also ask the site root for an icon; answer with the current tab icon.
+  app.get('/favicon.ico', (_req, res) => res.type('image/png').set('Cache-Control', 'no-cache').sendFile(path.join(publicDir, 'img', 'badge-64.png')));
 
   const onError: ErrorRequestHandler = (err, _req, res, _next) => {
     const status = err instanceof HttpError ? err.status : typeof err?.status === 'number' ? err.status : 500;
@@ -247,10 +257,11 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
   ctx.updates.startSchedule(); // does nothing unless update checks were turned on
   const content = express();
   content.disable('x-powered-by');
-  // Only Outpost's own pages (both schemes) may frame content, e.g. the Library page showing the reader.
+  // Only Outpost's own pages (both schemes) may frame content, e.g. the Library page showing the reader, and content
+  // itself: Kiwix's viewer shows each article in a frame of its own.
   content.use(guardHost(cfg, (req) => {
     const host = req.hostname.includes(':') ? `[${req.hostname}]` : req.hostname;
-    return `http://${host}:${cfg.port} https://${host}:${cfg.https.port}`;
+    return `'self' http://${host}:${cfg.port} https://${host}:${cfg.https.port}`;
   }));
   content.get('/healthz', (_req, res) => res.json({ ok: true }));
   content.use((_req, res, next) => {

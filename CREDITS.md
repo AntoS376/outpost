@@ -16,6 +16,7 @@ Each keeps its own licence. Outpost downloads them during setup or when you turn
 | [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) | QR codes | MIT |
 | [File Browser](https://filebrowser.org), [Navidrome](https://www.navidrome.org) and the other apps on the Apps page | Optional apps | Listed on each app's card |
 | Space Grotesk, Inter, JetBrains Mono | Interface fonts | SIL Open Font Licence 1.1 |
+| Noto Sans, from [Protomaps basemaps-assets](https://github.com/protomaps/basemaps-assets) | Map place names (optional) | SIL Open Font Licence 1.1 |
 
 ## Content
 

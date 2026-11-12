@@ -1,4 +1,4 @@
-import { $, api, esc, fmtBytes, jsonBody, onJobs, openTray, store, toast } from './core.js';
+import { $, api, esc, fmtBytes, installAddon, jsonBody, onJobs, openTray, store, toast } from './core.js';
 import { rememberPos } from './sos.js';
 import { mountDirections } from './directions.js';
 
@@ -365,7 +365,8 @@ export async function viewMaps(root) {
         ${data.files.length ? `<select id="mapsel" aria-label="Map file">${data.files.map((f) => `<option value="${esc(f.name)}" ${f.name === current ? 'selected' : ''}>${esc(f.name)} (${fmtBytes(f.size)})</option>`).join('')}</select>
           <p style="margin-top:8px" class="admin-only"><button class="btn small danger" type="button" id="delmap">Remove this map</button></p>` : '<p class="muted">None yet.</p>'}
         ${data.files.length ? `<div class="field" style="margin-top:12px"><label for="mapcolours">Map colours</label><select id="mapcolours">${[['auto', 'Match Light/Dark'], ['light', 'Light'], ['dark', 'Dark'], ['white', 'White'], ['grayscale', 'Grayscale'], ['black', 'Black']].map(([v, t]) => `<option value="${v}" ${v === store.get('outpost.mapColours', 'auto') ? 'selected' : ''}>${t}</option>`).join('')}</select></div>` : ''}
-        ${data.files.length && !data.fonts ? `<p class="muted" style="font-size:13px">Place names appear once map fonts are installed. See the README.</p>` : ''}
+        ${data.files.length && !data.fonts ? `<p class="muted" style="font-size:13px;margin-top:12px">Place names appear once map fonts are installed (about 6 MB).<span class="member-only"> An admin can install them here.</span></p>
+          <p class="admin-only"><button class="btn small" type="button" id="getfonts">Install map fonts</button></p>` : ''}
       </section>
       <section class="admin-only"><h3>Download a region</h3>
         ${toolsMissing ? `<p class="note-box">The map tool isn't installed. Run <code>brew install pmtiles</code> in Terminal, then restart Outpost.</p>` : ''}
@@ -373,7 +374,7 @@ export async function viewMaps(root) {
           <div class="field"><label for="preset">Start from</label><select id="preset"><option value="">My own area</option><option value="world">World overview (small)</option></select></div>
           <div class="field"><label for="source">Planet map link (.pmtiles)</label><input id="source" type="url" required placeholder="https://build.protomaps.com/YYYYMMDD.pmtiles" value="${esc(saved.source)}">
             <span class="muted" style="font-size:13px">Pick a recent build at <a href="https://maps.protomaps.com/builds" target="_blank" rel="noopener">maps.protomaps.com/builds</a>.</span></div>
-          <div class="field"><label for="mname">Save as</label><input id="mname" required placeholder="my-region.pmtiles" pattern="[\\w][\\w.\\- ()]*\\.pmtiles"></div>
+          <div class="field"><label for="mname">Save as</label><input id="mname" required placeholder="my-region.pmtiles" pattern="[\\w][\\w.\\- \\(\\)]*\\.pmtiles"></div>
           <label>Area (degrees)</label>
           <div class="bbox"><input id="w" type="number" step="any" placeholder="West" aria-label="West" required><input id="s" type="number" step="any" placeholder="South" aria-label="South" required>
             <input id="e" type="number" step="any" placeholder="East" aria-label="East" required><input id="n" type="number" step="any" placeholder="North" aria-label="North" required></div>
@@ -427,6 +428,14 @@ export async function viewMaps(root) {
     }
   });
   side.addEventListener('click', async (e) => {
+    if (e.target.id === 'getfonts') {
+      const why = 'Outpost downloads the pinned Protomaps map fonts from GitHub, keeps them only if the SHA-256 matches, and then shows place names on every map.';
+      try {
+        if (await installAddon('mapfonts', 'map fonts', why)) e.target.disabled = true;
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    }
     if (e.target.id === 'useview') {
       if (!map || !mod) return toast('Open a map first', 'error');
       const [w, s, ea, n] = mod.boundsOf(map);
@@ -506,6 +515,12 @@ export async function viewMaps(root) {
     if (finished.some((j) => j.kind === 'place-index')) {
       await loadList();
       paintSearch();
+    }
+    // Map fonts just installed: draw the map again, now with place names.
+    if (finished.some((j) => j.label === 'Install map fonts' && j.status === 'done')) {
+      await loadList();
+      paintSide();
+      showMap();
     }
     if (finished.some((j) => j.kind === 'map-extract' && j.status === 'done')) {
       const hadNone = !current;

@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { Router } from 'express';
 import type { AppContext } from '../context.js';
-import { dirSize, listFiles, OUTPOST_VERSION, resolveBin } from '../util.js';
+import { dirSize, listFiles, OUTPOST_RELEASED, OUTPOST_VERSION, resolveBin } from '../util.js';
 import { userOf } from '../auth.js';
 import { readBattery } from '../services/battery.js';
 
@@ -29,6 +29,7 @@ export function statusRoutes(ctx: AppContext): Router {
     ]);
     res.json({
       version: OUTPOST_VERSION,
+      released: OUTPOST_RELEASED,
       // lan: this Mac's IPv4 addresses on the local network, for the "open it from another device" link.
       listen: {
         host: cfg.host,

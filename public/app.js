@@ -17,13 +17,16 @@ import { viewDocuments } from './js/documents.js';
 import { viewGames } from './js/games.js';
 import { viewReady } from './js/ready.js';
 import { viewRadio } from './js/radio.js';
+import { viewVoice } from './js/voice.js';
 import { startSosWatch } from './js/sos.js';
+import { startMoreMenu } from './js/menu.js';
+import { startVoice } from './js/voice-core.js';
 
-const routes = { home: viewHome, library: viewLibrary, ai: viewAi, maps: viewMaps, notes: viewNotes, tools: viewTools, setup: viewSetup, education: viewEducation, benchmark: viewBenchmark, account: viewAccount, updates: viewUpdates, emergency: viewEmergency, apps: viewApps, guide: viewGuide, documents: viewDocuments, games: viewGames, ready: viewReady, radio: viewRadio };
+const routes = { home: viewHome, library: viewLibrary, ai: viewAi, maps: viewMaps, notes: viewNotes, tools: viewTools, setup: viewSetup, education: viewEducation, benchmark: viewBenchmark, account: viewAccount, updates: viewUpdates, emergency: viewEmergency, apps: viewApps, guide: viewGuide, documents: viewDocuments, games: viewGames, ready: viewReady, radio: viewRadio, voice: viewVoice };
 // Views that need the full window height (the content scrolls inside, not the page).
 const fills = { library: (sub) => sub !== 'manage', ai: () => true, maps: () => true, notes: () => true };
 
-const LABELS = { home: 'Home', library: 'Library', ai: 'Assistant', maps: 'Maps', education: 'Education', notes: 'Notes', tools: 'Tools', setup: 'Setup', benchmark: 'Benchmark', account: 'Accounts', updates: 'Updates', emergency: 'Emergency', apps: 'Apps', guide: 'Guide', documents: 'Documents', games: 'Games', ready: 'Preparedness', radio: 'Radio' };
+const LABELS = { home: 'Home', library: 'Library', ai: 'Assistant', maps: 'Maps', education: 'Education', notes: 'Notes', tools: 'Tools', setup: 'Setup', benchmark: 'Benchmark', account: 'Accounts', updates: 'Updates', emergency: 'Emergency', apps: 'Apps', guide: 'Guide', documents: 'Documents', games: 'Games', ready: 'Preparedness', radio: 'Radio', voice: 'Voice' };
 const main = $('#main');
 
 // Header status: is the Outpost server answering?
@@ -88,11 +91,13 @@ async function route() {
 try {
   const me = await api('/auth/me');
   document.body.dataset.role = me.user?.role ?? 'member';
+  if (me.user) document.body.dataset.user = me.user.name;
   if (me.mode !== 'open' && me.user) {
     const who = $('#whoami');
     who.hidden = false;
     who.innerHTML = `Signed in as <a href="#account">${me.user.name.replace(/[<>&"]/g, '')}</a>`;
   }
+  if (me.mode === 'open' || me.user) startVoice();
 } catch {
   /* api() sends people who aren't signed in to the login page */
 }
@@ -162,6 +167,7 @@ $('#shutdown').addEventListener('click', () => {
   dlg.showModal();
 });
 startJobsUI();
+startMoreMenu();
 startSosWatch();
 window.addEventListener('hashchange', route);
 // First launch with nothing installed: open the setup wizard instead of an empty Home.

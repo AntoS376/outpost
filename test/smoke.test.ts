@@ -50,6 +50,9 @@ before(async () => {
     OUTPOST_KIWIX_BIN: path.join(bin, 'kiwix-serve'),
     OUTPOST_PMTILES_BIN: path.join(bin, 'pmtiles'),
     OUTPOST_KIWIX_PORT: String(await freePort()),
+    // Free ports, so a real Kolibri running on this Mac (8082/8083) is never reached by the tests.
+    OUTPOST_KOLIBRI_PORT: String(await freePort()),
+    OUTPOST_KOLIBRI_ZIP_PORT: String(await freePort()),
     OLLAMA_URL: `http://127.0.0.1:${ollamaPort}`,
     OUTPOST_CATALOG_URL: `${filesBase}/catalog/v2`,
   });
@@ -334,7 +337,7 @@ async function isolatedApp(env: Record<string, string>, seed?: (h: string) => Pr
   if (seed) await seed(h);
   const ollama = mockOllama();
   const op = await listen(ollama);
-  const made = await createApp(loadConfig({ OUTPOST_HOME: h, OUTPOST_KIWIX_PORT: String(await freePort()), OLLAMA_URL: `http://127.0.0.1:${op}`, ...env }));
+  const made = await createApp(loadConfig({ OUTPOST_HOME: h, OUTPOST_KIWIX_PORT: String(await freePort()), OUTPOST_KOLIBRI_PORT: String(await freePort()), OUTPOST_KOLIBRI_ZIP_PORT: String(await freePort()), OLLAMA_URL: `http://127.0.0.1:${op}`, ...env }));
   const s = http.createServer(made.app);
   const u = `http://127.0.0.1:${await listen(s)}`;
   const cs = http.createServer(made.content);
@@ -983,7 +986,7 @@ describe('benchmark', () => {
       const exp = await app.call(`/api/benchmark/${r.id}/export.json`);
       assert.equal(exp.status, 200);
       assert.match(exp.headers.get('content-disposition') ?? '', /^attachment; filename="outpost-benchmark-\d{4}-\d{2}-\d{2}-\d+\.json"$/);
-      assert.equal(exp.json.outpost.version, '0.1.0');
+      assert.equal(exp.json.outpost.version, '2.0.0');
       assert.equal(exp.json.result.score, r.score);
       assert.equal(exp.json.result.tag.name, 'Sam');
       assert.equal((await app.call('/api/benchmark/nope/export.json')).status, 404);
@@ -1050,7 +1053,7 @@ describe('update checker', () => {
       });
       assert.ok(st.lastCheck > 0);
       const r = st.results;
-      assert.deepEqual(r.outpost, { current: '0.1.0', latest: '0.2.0', newer: true, url: 'https://github.com/someone/outpost/releases/tag/v0.2.0' });
+      assert.deepEqual(r.outpost, { current: '2.0.0', latest: '2.1.0', newer: true, url: 'https://github.com/someone/outpost/releases/tag/v2.1.0' });
       assert.deepEqual(r.books.map((b: any) => [b.file, b.newFile]), [['book_a_nopic_2025-06.zim', 'book_a_nopic_2026-01.zim']], 'only books with a newer edition');
       assert.equal(r.books[0].size, 3000);
       assert.deepEqual(r.models.map((m: any) => m.name), ['llama3.2:3b'], 'nomic-embed-text is current; unknown models are skipped: ' + JSON.stringify(r.notes));
