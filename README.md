@@ -2,6 +2,8 @@
 
 A self-hosted offline knowledge server for macOS: a library, an AI assistant, maps, notes and emergency tools that keep working with no internet, served from your Mac to the devices around it. Everything runs natively on the Mac; Docker is only needed for the optional Docker apps.
 
+![Outpost's Home page: the Emergency SOS band, the green Voice channel band, the Library, Maps, Assistant and Documents cards, quick links, system status, storage and sharing](docs/img/home.jpg)
+
 | Module | What it does | Powered by |
 |---|---|---|
 | Library | Read Wikipedia and other books offline | `kiwix-serve` |
