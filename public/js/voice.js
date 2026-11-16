@@ -29,7 +29,7 @@ export async function viewVoice(root) {
         ? `<p>Recording needs a secure connection. ${port ? `Open <a href="https://${esc(location.hostname)}:${port}/#voice">https://${esc(location.hostname)}:${port}</a>. First time on this device? <a href="/join">Set it up</a> (once per device).` : 'HTTPS is off on this Outpost; it turns on when Outpost is shared on the network.'} You can still play messages below.</p>`
         : s.on
           ? `<button class="voice-talk" type="button" id="talk"><span class="dot" aria-hidden="true"></span><span id="talklabel">Hold to talk</span></button>
-             <p class="muted small">Slide off the button before letting go to cancel. Up to ${MAX_SECONDS} seconds. On a computer, hold the space bar on any page. The green band on Home and the mic button in the corner of other pages work the same way.</p>
+             <p class="muted small">Slide off the button before letting go to cancel. Up to ${MAX_SECONDS} seconds. On a computer, you can also hold the space bar here or on Home. The green band on Home works the same way.</p>
              <p><button class="btn small" type="button" id="voiceoff">Turn off voice</button></p>`
           : `<p>Turn on voice to talk and to hear new messages as they arrive. Your browser asks to use the microphone; it records only while you hold the button.</p>
              <p><button class="btn primary" type="button" id="voiceon">Turn on voice</button></p>`;

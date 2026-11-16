@@ -198,11 +198,11 @@ Press **Send SOS** on the red strip at the top of Home, or on **Emergency → Si
 
 ### Voice messages
 
-Short voice messages for everyone on this Outpost, like a walkie-talkie that remembers. Open **Voice** (under Be ready; on phones, **More → Voice**), use the green **Voice channel** band on Home (under Emergency SOS: who is listening, what is new, and **Hold to talk**), or the round mic button in the corner of every other page.
+Short voice messages for everyone on this Outpost, like a walkie-talkie that remembers. Open **Voice** (under Be ready; on phones, **More → Voice**), or use the green **Voice channel** band on Home (under Emergency SOS: who is listening, what is new, and **Hold to talk**).
 
-- Tap the mic button once and allow the microphone. It turns green. Do this each time you open Outpost: browsers only allow the microphone and sound after a tap.
-- Hold the button (or the space bar on a computer), talk, and let go to send. Slide your finger off before letting go to cancel. Up to 60 seconds.
-- New messages from others play by themselves while voice is on. If you missed some, the mic button and Voice show a red count; open Voice and tap **Play new**.
+- Tap **Turn on voice** once and allow the microphone. Do this each time you open Outpost: browsers only allow the microphone and sound after a tap.
+- Hold the button (or the space bar on a computer, on Voice or Home), talk, and let go to send. Slide your finger off before letting go to cancel. Up to 60 seconds.
+- New messages from others play by themselves while voice is on. If you missed some, Voice in the menu (and **More** on phones) shows a red count; open Voice and tap **Play new**.
 - It needs the secure address on phones (`https://…:8443`, set up on the join page). Messages are kept for 24 hours, on this Mac only.
 
 ## 7. Day to day

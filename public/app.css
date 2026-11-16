@@ -438,22 +438,9 @@ details.tool .inner { padding: 0 0 20px 28px; max-width: 760px; }
 .voicelist .grow { flex: 1; min-width: 0; }
 .voicelist li.new strong { color: var(--accent); }
 .voicelist li.playing { background: var(--hover); }
-/* The mic button on every page (not on Voice, which has the big one): tap to turn voice on, then hold to talk. */
-.voicefab { position: fixed; right: 22px; bottom: 22px; z-index: 22; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
-  border: 2px dashed var(--muted); background: var(--panel); color: var(--muted); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); cursor: pointer;
-  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.voicefab svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.voicefab.on { border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
-.voicefab.rec { border-color: var(--sos); background: var(--sos); color: var(--sos-ink); transform: scale(1.12); animation: voicepulse 1s ease-in-out infinite; }
-.voicefab.cancel { opacity: 0.55; animation: none; }
-.voicefab.paused { box-shadow: 0 0 0 4px var(--warn), 0 4px 16px rgba(0, 0, 0, 0.18); }
-body[data-route="voice"] .voicefab { display: none; }
-.vbadge, .navbadge { min-width: 18px; padding: 1px 5px; border-radius: 99px; background: var(--sos); color: var(--sos-ink); font: 700 11px/1.4 var(--mono); text-align: center; }
-.vbadge { position: absolute; top: -4px; right: -4px; }
+.navbadge { min-width: 18px; padding: 1px 5px; border-radius: 99px; background: var(--sos); color: var(--sos-ink); font: 700 11px/1.4 var(--mono); text-align: center; }
 .rail .navbadge { margin-left: auto; }
-/* Phones: the mic button sits just above the bottom bar, clear of the iPhone home indicator. */
 @media (max-width: 860px) {
-  .voicefab { right: 16px; bottom: calc(82px + env(safe-area-inset-bottom)); width: 52px; height: 52px; }
   .rail .more .navbadge { position: absolute; top: 2px; left: calc(50% + 6px); margin: 0; }
 }
 /* Emergency */
@@ -749,7 +736,6 @@ body:not([data-role="member"]) .member-only { display: none; }
 .vbtalk.rec .dot { animation: voicepulse 1s ease-in-out infinite; }
 .vbopen { color: inherit; font: 600 12px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; text-underline-offset: 4px; }
 .vbtalk:focus-visible, .vbtitle:focus-visible, .vbopen:focus-visible { outline: 3px solid #f2ecdc; outline-offset: 3px; }
-body[data-route="home"] .voicefab { display: none; }
 .attention { margin-bottom: 22px; }
 .primaries { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0 0 16px; }
 .primary { display: flex; flex-direction: column; padding: 18px 20px 18px; color: var(--ink); text-decoration: none; }

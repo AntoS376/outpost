@@ -3,7 +3,7 @@ import { encodeWav } from './wav.js';
 
 /**
  * Voice messages for the whole app: the microphone, recorder, player and channel live here once, so voice keeps
- * working while you move between pages. The Voice page and the floating mic button both use this module.
+ * working while you move between pages. The Voice page and the Voice band on Home both use this module.
  */
 export const MAX_SECONDS = 60;
 const POLL_MS = 3_000;
@@ -314,46 +314,19 @@ export async function refresh() {
   }
 }
 
-/** The mic button in the corner of every page, and the New counts on the menu. Started once, after sign-in. */
+/** Voice in the background on every page: the New counts on the menu, auto-play, and the space bar on Voice and Home. Started once, after sign-in. */
 export function startVoice() {
-  const fab = document.createElement('button');
-  fab.type = 'button';
-  fab.id = 'voicefab';
-  fab.className = 'voicefab';
-  fab.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg><b class="vbadge" hidden></b>`;
-  document.body.append(fab);
-
-  fab.addEventListener('click', () => {
-    if (state.on) return;
-    if (!canRecord()) location.hash = '#voice';
-    else turnOn();
-  });
-  fab.addEventListener('pointerdown', (e) => {
-    if (!state.on) return;
-    e.preventDefault();
-    fab.setPointerCapture?.(e.pointerId);
-    startRecording();
-  });
-  fab.addEventListener('pointerup', () => state.on && stopRecording(false));
-  fab.addEventListener('pointercancel', () => stopRecording(true));
-  fab.addEventListener('pointermove', (e) => {
-    if (!state.recording) return;
-    const r = fab.getBoundingClientRect();
-    const out = 24;
-    setCancelled(e.clientX < r.left - out || e.clientX > r.right + out || e.clientY < r.top - out || e.clientY > r.bottom + out);
-  });
-  fab.addEventListener('contextmenu', (e) => e.preventDefault());
-
   // Browsers pause a page's sound (an iPhone app back from the background, say) until the next tap: any tap or key
   // in Outpost starts it again, and whatever arrived meanwhile plays.
   const wake = () => state.on && ctx && ctx.state !== 'running' && unlock();
   document.addEventListener('pointerdown', wake, true);
   document.addEventListener('keydown', wake, true);
 
-  // Space bar to talk, anywhere in Outpost, once voice is on (not while typing).
+  // Space bar to talk on Voice and Home, where the talk button shows it recording (not while typing).
   const typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') || document.activeElement?.isContentEditable;
+  const talkPage = () => ['voice', 'home'].includes(document.body.dataset.route ?? '');
   window.addEventListener('keydown', (e) => {
-    if (e.code !== 'Space' || e.repeat || !state.on || typing()) return;
+    if (e.code !== 'Space' || e.repeat || !state.on || !talkPage() || typing()) return;
     e.preventDefault();
     startRecording();
   });
@@ -364,17 +337,10 @@ export function startVoice() {
   });
 
   const paint = () => {
-    const s = snapshot();
-    const left = MAX_SECONDS - Math.floor((Date.now() - s.startedAt) / 1000);
-    fab.classList.toggle('on', s.on);
-    fab.classList.toggle('rec', s.recording);
-    fab.classList.toggle('cancel', s.recording && s.cancelled);
-    fab.classList.toggle('paused', s.paused && !s.recording);
-    fab.title = !s.on ? 'Turn on voice' : s.paused && !s.recording ? 'Tap to hear new messages' : s.recording ? (s.cancelled ? 'Let go to cancel' : left <= 10 ? `${left} s left: let go to send` : 'Let go to send') : 'Hold to talk';
-    fab.setAttribute('aria-label', fab.title);
-    for (const b of [fab.querySelector('.vbadge'), ...$$('.navbadge')]) {
-      b.hidden = !s.unheard;
-      b.textContent = s.unheard > 9 ? '9+' : String(s.unheard);
+    const { unheard } = snapshot();
+    for (const b of $$('.navbadge')) {
+      b.hidden = !unheard;
+      b.textContent = unheard > 9 ? '9+' : String(unheard);
     }
   };
   for (const a of $$('.rail a[data-route="voice"], #more-btn')) {
