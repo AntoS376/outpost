@@ -1,4 +1,5 @@
 import { $, api, contentBase, esc } from './core.js';
+import { incidentLog } from './emergency-kit.js';
 
 /**
  * First-aid cards, written in our own words from the government pages cited on each card (read on the date given).
@@ -76,6 +77,58 @@ export const CARDS = [
 ];
 export const CHECKED = '2026-10-30';
 
+/** What to do in the first minutes of a disaster, in our own words from the Ready.gov pages cited (read 2026-11-18). */
+export const HAZARDS = [
+  {
+    id: 'quake',
+    title: 'Earthquake',
+    steps: [
+      'Inside: stay inside. Drop to your hands and knees, cover your head and neck (under a sturdy table if one is close), and hold on until the shaking stops. Don’t run outside or stand in a doorway.',
+      'In bed: turn face down and cover your head and neck with a pillow.',
+      'Outside: stay outside, away from buildings, trees, streetlights and power lines. In a car: pull over, stop, and set the parking brake.',
+      'After: leave a damaged building and stay away from it. Expect aftershocks: drop, cover and hold on again.',
+      'Trapped: cover your mouth with your shirt. Text, bang on a pipe or wall, or blow a whistle instead of shouting.',
+    ],
+    source: ['Ready.gov: Earthquakes', 'https://www.ready.gov/earthquakes'],
+  },
+  {
+    id: 'fire',
+    title: 'Fire at home',
+    steps: [
+      'Get low and crawl under the smoke to your way out: smoke and poisonous gases gather near the ceiling.',
+      'Feel the door and handle first. If they are hot, or smoke comes round the door, keep it shut and use your other way out. Otherwise open it slowly, ready to shut it.',
+      'Clothes on fire: stop, drop and roll, with your hands over your face. Or smother the flames with a blanket.',
+      'Once out, call your emergency number. If someone is still inside, tell the operator and firefighters where they are.',
+      'Can’t get out: shut the door, block the gaps and vents with cloth, call and say where you are, and signal from a window with a light or a pale cloth.',
+    ],
+    source: ['Ready.gov: Home fires', 'https://www.ready.gov/home-fires'],
+  },
+  {
+    id: 'flood',
+    title: 'Flood',
+    steps: [
+      'If you are told to leave, leave at once, and never drive around barriers.',
+      'Turn around, don’t drown: don’t walk, swim or drive through flood water. 15 cm (6 in) of moving water can knock you down; 30 cm (1 ft) can sweep a car away.',
+      'Stay off bridges over fast-moving water.',
+      'In a car in fast water, stay inside; if water rises inside, get onto the roof.',
+      'Trapped in a building: go to the highest floor. Go onto the roof only if you must, and signal for help. Don’t climb into a closed attic.',
+    ],
+    source: ['Ready.gov: Floods', 'https://www.ready.gov/floods'],
+  },
+  {
+    id: 'blast',
+    title: 'Explosions or strikes nearby',
+    steps: [
+      'If things are falling, take cover under a sturdy table or desk.',
+      'When it is safe, leave the area fast. Don’t stop for belongings or calls. Stay low if there is smoke; avoid lifts and stairs or floors that look damaged.',
+      'Outside: keep moving away. Help others if it is safe, but don’t dig for people under rubble yourself: tell rescuers where they are.',
+      'Trapped under debris: cover your nose and mouth, and signal with a light, a whistle or by tapping on pipes. Shout only as a last resort.',
+      'Then text your family contact (keep calls for emergencies), and follow what local officials say.',
+    ],
+    source: ['Ready.gov: Explosions', 'https://www.ready.gov/explosions'],
+  },
+];
+
 /** First aid tab: the cards, and a CPR beat to push along with. */
 export async function firstAidView(body) {
   // Link each card to the offline medical encyclopedia when it's installed.
@@ -96,7 +149,13 @@ export async function firstAidView(body) {
         <p class="when">${esc(c.when)}</p>
         <ol>${c.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
         <p class="src">Source: <a href="${c.source[1]}" target="_blank" rel="noopener">${esc(c.source[0])}</a>${book ? ` · <a class="noprint" href="${content}/kiwix/search?books.name=${encodeURIComponent(book)}&pattern=${encodeURIComponent(c.search)}" target="_blank" rel="noopener">Read more offline</a>` : ''}</p></article>`).join('')}</div>
-    <p class="muted" style="font-size:13px;margin-top:12px">Not here yet: choking and burns. They will be added once checked against a government source.</p>`;
+    <p class="muted" style="font-size:13px;margin-top:12px">Not here yet: choking and burns. They will be added once checked against a government source.</p>
+    <section class="block"><h2>Do this now</h2>
+      <div class="aidcards">${HAZARDS.map((c) => `<article class="aidcard" id="now-${c.id}"><h2>${esc(c.title)}</h2>
+        <ol>${c.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+        <p class="src">Source: <a href="${c.source[1]}" target="_blank" rel="noopener">${esc(c.source[0])}</a>, read 2026-11-18</p></article>`).join('')}</div></section>
+    <section class="block" id="incident"></section>`;
+  incidentLog($('#incident', body));
 
   // 110 beats a minute: a short click and a pulse of the circle on each beat.
   let audio = null;

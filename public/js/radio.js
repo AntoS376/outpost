@@ -1,19 +1,8 @@
 import { $, esc, store, toast } from './core.js';
 import { CODE, NATO } from './morse.js';
-import { back } from './ready.js';
+import { FRS, NOAA, channelMhz, receiver } from './radio-rx.js';
 
-// NOAA Weather Radio: seven channels, all receive-only.
-const NOAA = [
-  ['WX1', '162.550'], ['WX2', '162.400'], ['WX3', '162.475'], ['WX4', '162.425'],
-  ['WX5', '162.450'], ['WX6', '162.500'], ['WX7', '162.525'],
-];
-
-// FRS / GMRS channels 1–22 (MHz), with the power limits since 2017.
-const FRS = [
-  '462.5625', '462.5875', '462.6125', '462.6375', '462.6625', '462.6875', '462.7125',
-  '467.5625', '467.5875', '467.6125', '467.6375', '467.6625', '467.6875', '467.7125',
-  '462.5500', '462.5750', '462.6000', '462.6250', '462.6500', '462.6750', '462.7000', '462.7250',
-];
+// Which FRS / GMRS channels people use for calling, and the power limits since 2017.
 const FRS_NOTE = { 1: 'Common calling channel', 3: 'Common preparedness calling channel', 20: 'Emergency and travel help (often tone 141.3)' };
 const power = (n) => (n <= 7 ? ['2 W', '5 W'] : n <= 14 ? ['0.5 W', '0.5 W'] : ['2 W', '50 W']);
 
@@ -56,14 +45,14 @@ const list = (key) => (Array.isArray(store.get(key, [])) ? store.get(key, []) : 
 
 /** Radio: emergency channels, quick references, your own channels and a check-in log. All built in, nothing to download. */
 export async function viewRadio(root) {
-  root.innerHTML = `<div class="titlebar"><div>${back}
-      <p class="kicker">Field manual · Radio</p><h1>Radio</h1>
-      <p class="lead">Emergency channels, Morse code, the phonetic alphabet and how to call for help, plus your own channels and a check-in log. Everything here works without the internet.</p></div></div>
+  root.innerHTML = `<div class="titlebar"><div><h1>Radio</h1>
+      <p class="lead">Listen with an RTL-SDR receiver, follow planes, sensors and APRS, and keep emergency channels and how to call for help at hand. All of it works without the internet.</p></div></div>
     <div class="prep radio">
-      <div class="prep-pills" role="group" aria-label="Show"></div>
+      <div id="rx"></div>
+      <div class="seg" role="group" aria-label="Show"></div>
       <div id="rbody"></div>
     </div>`;
-  const pills = $('.prep-pills', root);
+  const pills = $('.seg', root);
   const body = $('#rbody', root);
   let tab = TABS.some(([t]) => t === store.get(TAB_KEY, '')) ? store.get(TAB_KEY, '') : 'channels';
   let editing = null;
@@ -90,7 +79,7 @@ export async function viewRadio(root) {
     return `<section class="card prep-kit"><div class="ptitle"><h2>${e ? 'Edit channel' : 'Add a channel'}</h2><span class="kicker">Family or group</span></div>
         <form class="radio-form" id="chform">
           <label>Name<input name="name" required maxlength="60" placeholder="Family" value="${v('name')}"></label>
-          <label>Channel or frequency<input name="freq" required maxlength="60" placeholder="GMRS 17, tone 12" value="${v('freq')}"></label>
+          <label>Channel or frequency<input name="freq" required maxlength="60" placeholder="GMRS 17, or 462.6500 MHz" value="${v('freq')}"></label>
           <label>Call sign<input name="call" maxlength="30" placeholder="Optional" value="${v('call')}"></label>
           <label class="wide">Note<input name="note" maxlength="200" placeholder="When to check in, who's on it…" value="${v('note')}"></label>
           <div class="wide"><button class="btn small primary" type="submit">${e ? 'Save' : 'Add'}</button>${e ? ' <button class="btn small" type="button" id="chcancel">Cancel</button>' : ''}</div>
@@ -102,7 +91,7 @@ export async function viewRadio(root) {
             <p class="radio-freq">${esc(c.freq)}</p>
             ${c.call ? `<div class="rtags"><span class="rbadge cat">${esc(c.call)}</span></div>` : ''}
             ${c.note ? `<p>${esc(c.note)}</p>` : ''}
-            <div class="ractions"><button class="btn small" type="button" data-edit="${esc(c.id)}">Edit</button>
+            <div class="ractions">${channelMhz(c.freq) ? `<button class="btn small primary" type="button" data-listen-mhz="${channelMhz(c.freq)}">Listen</button>` : ''}<button class="btn small" type="button" data-edit="${esc(c.id)}">Edit</button>
               <button class="btn small danger" type="button" data-rmch="${esc(c.id)}">Remove</button></div></li>`).join('')}</ul>`
         : '<p class="muted">Add the channels your family or group agreed on, so everyone has them in one place.</p>'}
       <p class="muted small">Saved in this browser only.</p>`;
@@ -147,7 +136,7 @@ export async function viewRadio(root) {
 
   const VIEWS = { channels, mine, log, codes, mayday };
   function paint() {
-    pills.innerHTML = TABS.map(([t, label]) => `<button type="button" class="rpill" data-t="${esc(t)}" aria-pressed="${t === tab}">${esc(label)}</button>`).join('');
+    pills.innerHTML = TABS.map(([t, label]) => `<button type="button" data-t="${esc(t)}" aria-pressed="${t === tab}">${esc(label)}</button>`).join('');
     body.innerHTML = VIEWS[tab]();
   }
 
@@ -185,7 +174,8 @@ export async function viewRadio(root) {
   body.addEventListener('click', (e) => {
     const t = e.target.closest('button');
     if (!t) return;
-    if (t.dataset.edit) {
+    if (t.dataset.listenMhz) window.dispatchEvent(new CustomEvent('outpost:radio-tune', { detail: { mhz: Number(t.dataset.listenMhz) } }));
+    else if (t.dataset.edit) {
       editing = t.dataset.edit;
       paint();
       $('#chform input', body)?.focus();
@@ -208,4 +198,5 @@ export async function viewRadio(root) {
   });
 
   paint();
+  return receiver($('#rx', root)).catch(() => undefined); // the reference tabs work even if the receiver can't load
 }

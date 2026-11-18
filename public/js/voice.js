@@ -5,7 +5,7 @@ const clock = (ms) => new Date(ms).toLocaleTimeString(undefined, { hour: '2-digi
 
 /** Voice: one shared channel of short voice messages. Hold to talk; everyone signed in can play them for 24 hours. */
 export async function viewVoice(root) {
-  root.innerHTML = `<div class="titlebar"><div><p class="kicker">Be ready · Voice</p><h1>Voice</h1>
+  root.innerHTML = `<div class="titlebar"><div><h1>Voice</h1>
       <p class="lead">Short voice messages for everyone on this Outpost, like a walkie-talkie that remembers. Hold the button, talk, let go to send. New messages play by themselves while voice is on. Messages stay for 24 hours.</p></div></div>
     <div class="voicegrid"><section class="card voicebox" id="vbox"></section>
       <section class="card voiceon"><h2>On the channel now</h2><ul class="voicepeople" id="vpeople"></ul>

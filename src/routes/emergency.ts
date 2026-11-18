@@ -5,7 +5,7 @@ import type { AppContext } from '../context.js';
 import { userOf } from '../auth.js';
 import { HttpError, readJson } from '../util.js';
 
-/** One person's emergency card and kit checklists. Medical details, so the file is readable by its owner only. */
+/** One person's emergency card, kit checklists, numbers to call and incident log. Medical details, so the file is readable by its owner only. */
 export interface EmergencyData {
   card: {
     name: string;
@@ -20,6 +20,10 @@ export interface EmergencyData {
   };
   /** Ticked items per list, e.g. { gobag: ["water", …] }, and items people added themselves. */
   kits: { checked: Record<string, string[]>; extra: Record<string, string[]> };
+  /** Services to call (police, ambulance, fire…), in the order shown. */
+  numbers: { name: string; number: string }[];
+  /** Incident log: what happened and when (ms since epoch), oldest first, for whoever takes over. */
+  log: { at: number; text: string }[];
 }
 
 const BLOOD = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'];
@@ -27,6 +31,8 @@ const LISTS = ['gobag', 'home', 'car'];
 const empty = (): EmergencyData => ({
   card: { name: '', born: '', bloodType: '', allergies: '', conditions: '', medications: '', contacts: [], meetingPoints: [], notes: '' },
   kits: { checked: {}, extra: {} },
+  numbers: [],
+  log: [],
 });
 
 const text = (v: unknown, max: number, field: string) => {
@@ -38,6 +44,13 @@ const list = (v: unknown, max: number, field: string) => {
   if (v === undefined) return [];
   if (!Array.isArray(v) || v.length > max) throw new HttpError(400, `${field} must be a list of at most ${max}.`);
   return v;
+};
+
+/** A number to dial: digits with the usual + - ( ) spaces, and * or # for service codes. */
+const dialable = (v: unknown) => {
+  const s = text(v, 30, 'Number');
+  if (!/^[0-9+\-() *#]+$/.test(s) || !/[0-9]/.test(s)) throw new HttpError(400, `"${s}" is not a phone number.`);
+  return s;
 };
 
 function validate(body: Partial<EmergencyData>): EmergencyData {
@@ -70,6 +83,12 @@ function validate(body: Partial<EmergencyData>): EmergencyData {
       notes: text(c.notes, 1000, 'Notes'),
     },
     kits: { checked: perList(k.checked, 200, 60, 'Checklist item'), extra: perList(k.extra, 50, 120, 'Your own item') },
+    numbers: list(body.numbers, 20, 'Numbers').map((x: { name?: unknown; number?: unknown }) => ({ name: text(x?.name, 60, 'Name'), number: dialable(x?.number) })),
+    log: list(body.log, 300, 'Log').map((x: { at?: unknown; text?: unknown }) => {
+      const at = Number(x?.at);
+      if (!Number.isFinite(at) || at < 0) throw new HttpError(400, 'Each log entry needs a time.');
+      return { at, text: text(x?.text, 200, 'Log entry') };
+    }).filter((x) => x.text),
   };
 }
 
@@ -79,15 +98,29 @@ export function emergencyRoutes(ctx: AppContext): Router {
   const dir = path.join(ctx.cfg.home, 'emergency');
   const file = (res: Parameters<typeof userOf>[0]) => path.join(dir, `${userOf(res).name}.json`); // names are [a-z0-9_-]
 
-  r.get('/', async (_req, res) => res.json({ ...empty(), ...(await readJson<EmergencyData | null>(file(res), null)) }));
+  const current = async (res: Parameters<typeof userOf>[0]) => ({ ...empty(), ...(await readJson<EmergencyData | null>(file(res), null)) });
 
+  r.get('/', async (_req, res) => res.json(await current(res)));
+
+  // One person's saves run one after another: each reads what the last one wrote, and no two share the temp file.
+  const queue = new Map<string, Promise<unknown>>();
+
+  // Parts left out of the body (each page sends only its own) stay as they are.
   r.put('/', async (req, res) => {
-    const data = validate(req.body ?? {});
-    await fsp.mkdir(dir, { recursive: true, mode: 0o700 });
-    const tmp = `${file(res)}.tmp-${process.pid}`;
-    await fsp.writeFile(tmp, JSON.stringify(data, null, 2), { mode: 0o600 });
-    await fsp.rename(tmp, file(res));
-    res.json(data);
+    const name = userOf(res).name;
+    const save = async () => {
+      const data = validate({ ...(await current(res)), ...(req.body ?? {}) });
+      await fsp.mkdir(dir, { recursive: true, mode: 0o700 });
+      const tmp = `${file(res)}.tmp-${process.pid}`;
+      await fsp.writeFile(tmp, JSON.stringify(data, null, 2), { mode: 0o600 });
+      await fsp.rename(tmp, file(res));
+      return data;
+    };
+    const run = (queue.get(name) ?? Promise.resolve()).then(save);
+    const settled = run.catch(() => undefined);
+    queue.set(name, settled);
+    settled.then(() => queue.get(name) === settled && queue.delete(name));
+    res.json(await run);
   });
   return r;
 }

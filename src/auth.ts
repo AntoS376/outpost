@@ -27,8 +27,18 @@ const MEMBER_CHANGES: [RegExp, string[]][] = [
   [/^\/api\/sos$/, ['POST']], // call for help (the board checks who may cancel)
   [/^\/api\/sos\/[^/]+\/ack$/, ['POST']],
   [/^\/api\/sos\/[^/]+$/, ['DELETE']],
+  [/^\/api\/checkin\/me$/, ['PUT', 'DELETE']], // your own line on the Who's safe board
   [/^\/api\/voice$/, ['POST']], // send a voice message (the store checks who may delete)
   [/^\/api\/voice\/[^/]+$/, ['DELETE']],
+  [/^\/api\/radio$/, ['PUT']], // tune the shared receiver, like turning the dial on a radio in the room
+  [/^\/api\/radio\/scan$/, ['POST']], // a sweep for the activity bars
+  [/^\/api\/radio\/autoscan$/, ['POST', 'DELETE']],
+  [/^\/api\/radio\/planes$/, ['POST', 'DELETE']], // planes on the map
+  [/^\/api\/radio\/sensors$/, ['POST', 'DELETE']], // nearby weather stations and other sensors
+  [/^\/api\/radio\/names$/, ['PUT']], // name a station for everyone
+  [/^\/api\/radio\/aprs$/, ['POST', 'DELETE']], // ham stations on APRS
+  [/^\/api\/radio\/record$/, ['POST', 'DELETE']], // record what the receiver hears
+  [/^\/api\/radio\/calls\/[^/]+\/voice$/, ['POST']], // share a heard call on the Voice channel
   [/^\/api\/auth\/(login|logout)$/, ['POST']],
   [/^\/api\/auth\/password$/, ['PUT']],
   [/^\/kolibri(\/|$)/, ['POST', 'PUT', 'PATCH', 'DELETE']], // Kolibri has its own accounts and checks

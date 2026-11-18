@@ -79,7 +79,7 @@ async function shutdown(code = 0): Promise<void> {
   contentServer.close();
   secureContent?.close();
   // Stop children without forgetting that Kolibri and apps were on, so it comes back next launch.
-  await Promise.all([ctx.kiwix.stop(), ctx.kolibri.stop(false), ctx.apps.stopAll(), ctx.routing.stopAll(), ctx.awake.set(false, false)]);
+  await Promise.all([ctx.kiwix.stop(), ctx.kolibri.stop(false), ctx.apps.stopAll(), ctx.routing.stopAll(), ctx.radio.stop(), ctx.awake.set(false, false)]);
   process.exit(code);
 }
 process.on('SIGINT', () => shutdown());

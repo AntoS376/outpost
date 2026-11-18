@@ -26,6 +26,19 @@ export function mapsRoutes(ctx: AppContext): Router {
     res.json({ results: await ctx.places.search(name, String(req.query.q ?? '').slice(0, 100)) });
   });
 
+  // Hospitals, pharmacies, police and fire stations near a point, from one map's own data.
+  r.get('/nearby', async (req, res) => {
+    const name = safeFileName(String(req.query.file ?? ''), ['.pmtiles']);
+    if (!name) throw new HttpError(400, 'file must be a .pmtiles name');
+    const lat = Number(req.query.lat);
+    const lon = Number(req.query.lon);
+    if (!Number.isFinite(lat) || lat < -85 || lat > 85 || !Number.isFinite(lon) || lon < -180 || lon > 180) {
+      throw new HttpError(400, 'A position needs a latitude from -85 to 85 and a longitude from -180 to 180.');
+    }
+    if (!(await fsp.stat(path.join(dir, name)).catch(() => null))) throw new HttpError(404, `No map called ${name}`);
+    res.json({ results: await ctx.places.nearby(name, lat, lon) });
+  });
+
   // Range requests are handled by sendFile; the PMTiles client depends on them.
   r.get('/files/:name', (req, res, next) => {
     const name = safeFileName(String(req.params.name), ['.pmtiles']);

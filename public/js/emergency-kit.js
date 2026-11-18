@@ -68,6 +68,96 @@ async function save(data) {
   return api('/emergency', jsonBody(data, 'PUT'));
 }
 
+const dial = (n) => n.replace(/[^0-9+*#]/g, '');
+
+/** Numbers: who to call where you are, one tap each on a phone; kept with your account. */
+export async function numbersView(body) {
+  let data = await load();
+  const store = async (numbers) => {
+    try {
+      data = await save({ numbers });
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+    render();
+  };
+
+  function render() {
+    const nums = data.numbers;
+    body.innerHTML = `${nums.length ? `<ul class="numlist">${nums.map((n, i) => `<li><a class="numcall" href="tel:${esc(dial(n.number))}"><span>${esc(n.name || 'Call')}</span><b>${esc(n.number)}</b></a>
+        <button class="btn small noprint numrm" type="button" data-rm="${i}" title="Remove" aria-label="Remove ${esc(n.name || n.number)}">✕</button></li>`).join('')}</ul>
+      <p class="muted small noprint">Tap a number to call it from a phone; on a Mac it opens FaceTime. Saved to your account, so they are on every device you sign in on.</p>`
+      : '<p class="note-box">No numbers yet. Add the police, ambulance and fire numbers for the country you are in, and anyone else to call.</p>'}
+      <section class="block noprint"><h2>Add a number</h2>
+        <form class="row" id="numadd"><div class="grow"><label for="numname">Name</label><input id="numname" maxlength="60" placeholder="e.g. Ambulance" required></div>
+          <div><label for="numnum">Number</label><input id="numnum" maxlength="30" inputmode="tel" placeholder="e.g. 112" required></div>
+          <button class="btn primary" type="submit">Add</button></form></section>`;
+  }
+
+  body.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (data.numbers.length >= 20) return toast('That is 20 numbers already: remove one first.', 'error');
+    store([...data.numbers, { name: $('#numname', body).value, number: $('#numnum', body).value }]);
+  });
+  body.addEventListener('click', (e) => {
+    const i = e.target.dataset?.rm;
+    if (i !== undefined) store(data.numbers.filter((_, j) => j !== Number(i)));
+  });
+  render();
+}
+
+const QUICK = ['Called for help', 'CPR started', 'Tourniquet on', 'Medicine given', 'Bleeding stopped', 'Help arrived'];
+
+/** Incident log: what happened and when, for whoever takes over; one tap for the common steps. */
+export async function incidentLog(box) {
+  let data;
+  try {
+    data = await load();
+  } catch (err) {
+    box.innerHTML = `<h2>Incident log</h2><p class="note-box">${esc(err.message)}</p>`;
+    return;
+  }
+  const when = (at) => {
+    const d = new Date(at);
+    const t = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toDateString() === new Date().toDateString() ? t : `${d.toLocaleDateString()} ${t}`;
+  };
+  const store = async (log) => {
+    try {
+      data = await save({ log: log.slice(-300) });
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+    render();
+  };
+  const add = (text) => store([...data.log, { at: Date.now(), text }]);
+
+  function render() {
+    const log = data.log;
+    box.innerHTML = `<h2>Incident log</h2>
+      <p class="muted noprint" style="max-width:70ch">Note what happened and when: who is hurt, what you did, what they were given. Show or print it for whoever takes over. Saved to your account.</p>
+      <div class="row noprint quicklog">${QUICK.map((q) => `<button class="btn small" type="button" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+      <form class="row noprint" id="logadd"><div class="grow"><label for="logtext">What happened</label><input id="logtext" maxlength="200" placeholder="e.g. Gave 500 mg paracetamol" autocomplete="off" required></div>
+        <button class="btn primary" type="submit">Add</button></form>
+      ${log.length ? `<ol class="loglist" reversed>${log.map((l, i) => [l, i]).reverse().map(([l, i]) => `<li><time>${when(l.at)}</time><span>${esc(l.text)}</span>
+          <button class="btn small noprint numrm" type="button" data-rmlog="${i}" title="Remove" aria-label="Remove ${esc(l.text)}">✕</button></li>`).join('')}</ol>
+        <p class="noprint"><button class="btn small" type="button" id="logclear">Clear the log</button></p>` : '<p class="muted">Nothing logged yet.</p>'}`;
+  }
+
+  box.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.q) add(t.dataset.q);
+    else if (t.dataset.rmlog !== undefined) store(data.log.filter((_, j) => j !== Number(t.dataset.rmlog)));
+    else if (t.id === 'logclear' && confirm('Clear the whole incident log? It can’t be brought back.')) store([]);
+  });
+  box.addEventListener('submit', (e) => {
+    e.preventDefault();
+    add($('#logtext', box).value.trim());
+  });
+  render();
+}
+
 /** "My card": details for whoever finds you or helps you, kept privately and printable. */
 export async function cardView(body) {
   let data = await load();
@@ -123,7 +213,6 @@ export async function cardView(body) {
           meetingPoints: [v('emeet1'), v('emeet2')].filter((x) => x.trim()),
           notes: v('enotes'),
         },
-        kits: data.kits,
       });
       toast('Card saved');
     } catch (err) {
@@ -132,12 +221,20 @@ export async function cardView(body) {
   });
 }
 
+/** One kit's items (its own plus the ones you added) and how many are ticked. */
+function progress(data, id) {
+  const checked = new Set(data.kits.checked[id] ?? []);
+  const all = [...KITS[id].items, ...(data.kits.extra[id] ?? []).map((t, i) => [`x${i}`, t, true])];
+  return { all, checked, done: all.filter(([k]) => checked.has(k)).length };
+}
+
 /** Kits: checklists with your own additions, and a water and food calculator. */
 export async function kitsView(body) {
   let data = await load();
   const saveKits = async () => {
     try {
-      data = await save({ card: data.card, kits: data.kits });
+      // Only the kits: the card, numbers and log on the server stay as they are.
+      data = await save({ kits: data.kits });
     } catch (err) {
       toast(err.message, 'error');
     }
@@ -145,11 +242,8 @@ export async function kitsView(body) {
 
   function render() {
     const lists = Object.entries(KITS).map(([id, kit]) => {
-      const checked = new Set(data.kits.checked[id] ?? []);
-      const extra = data.kits.extra[id] ?? [];
-      const all = [...kit.items, ...extra.map((t, i) => [`x${i}`, t, true])];
-      const done = all.filter(([k]) => checked.has(k)).length;
-      return `<section class="block kit"><div class="kithead"><h2>${kit.title}</h2><span class="muted">${done} of ${all.length} ready</span></div>
+      const { all, checked, done } = progress(data, id);
+      return `<section class="block kit"><div class="kithead"><h2>${kit.title}</h2><span class="kicker">${done} of ${all.length} ready</span></div>
         <div class="bar noprint"><i style="width:${(done / all.length) * 100}%"></i></div>
         <ul class="checks">${all.map(([k, label, mine]) => `<li><label class="check"><input type="checkbox" data-list="${id}" data-item="${k}" ${checked.has(k) ? 'checked' : ''}><span>${esc(label)}</span></label>${mine ? `<button class="btn small noprint" type="button" data-rmx="${id}:${k.slice(1)}" aria-label="Remove ${esc(label)}">Remove</button>` : ''}</li>`).join('')}</ul>
         <form class="row noprint addx" data-list="${id}"><div class="grow"><input placeholder="Add your own item" maxlength="120" aria-label="Add an item to ${kit.title}"></div><button class="btn small" type="submit">Add</button></form></section>`;

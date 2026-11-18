@@ -1,9 +1,10 @@
 import { $, esc } from './core.js';
 import { decode, encode, NATO, SOS, spell, timeline, unitMs } from './morse.js';
-import { cardView, kitsView } from './emergency-kit.js';
+import { cardView, numbersView } from './emergency-kit.js';
 import { locationView } from './emergency-location.js';
 import { firstAidView } from './firstaid.js';
 import { openSosDialog } from './sos.js';
+import { mountCheckin } from './checkin.js';
 
 /** Well-established channels only; regions and status are stated, and rules differ by country. */
 const RADIO = [
@@ -17,23 +18,52 @@ const RADIO = [
   ['PMR446 licence-free radio', '446.0–446.2 MHz, channels 1–16', 'Europe and many other countries', 'No official emergency channel: agree one with your group in advance.'],
 ];
 
+/** The international survivors' ground-to-air code (ICAO Annex 12): letter, meaning, and how to draw it on an 80×80 tile. */
+const GROUND = [
+  ['V', 'Need help', '<polyline points="20,15 40,65 60,15"/>'],
+  ['X', 'Need medical help', '<path d="M18 15 62 65M62 15 18 65"/>'],
+  ['N', 'No', '<polyline points="20,65 20,15 60,65 60,15"/>'],
+  ['Y', 'Yes', '<path d="M20 15 40 40 60 15M40 40v25"/>'],
+  ['↑', 'Went this way', '<path d="M40 65V15M24 31 40 15l16 16"/>'],
+];
+
+/** The pinned bar is clear where it sits, and gets the page colour only while pinned over scrolled content. */
+function shadeWhenPinned(root) {
+  const bar = $('.em-nav', root);
+  const above = bar.previousElementSibling;
+  const gap = bar.getBoundingClientRect().top - above.getBoundingClientRect().bottom;
+  const check = () => {
+    if (!bar.isConnected) return document.removeEventListener('scroll', check, true);
+    bar.classList.toggle('pinned', bar.getBoundingClientRect().top - above.getBoundingClientRect().bottom > gap + 1);
+  };
+  document.addEventListener('scroll', check, { capture: true, passive: true });
+}
+
 export async function viewEmergency(root, sub) {
-  const tab = ['aid', 'card', 'kits', 'location'].includes(sub) ? sub : 'signal';
-  const nav = `<div class="seg noprint">${[['signal', 'Signal', ''], ['aid', 'First aid', '/aid'], ['location', 'Location', '/location'], ['card', 'My card', '/card'], ['kits', 'Kits', '/kits']].map(([id, label, path]) => `<a href="#emergency${path}" ${tab === id ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</div>`;
+  if (sub === 'kits') return location.replace('#ready'); // the kits moved to Preparedness
+  const tab = ['aid', 'card', 'location', 'numbers'].includes(sub) ? sub : 'signal';
+  // The section tabs and Print, pinned under the top bar while the page scrolls.
+  const nav = `<nav class="em-nav row noprint" aria-label="Emergency sections"><div class="seg">${[['signal', 'Signal', ''], ['numbers', 'Numbers', '/numbers'], ['aid', 'First aid', '/aid'], ['location', 'Location', '/location'], ['card', 'My card', '/card']].map(([id, label, path]) => `<a href="#emergency${path}" ${tab === id ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</div>
+    <button class="btn em-print" type="button">Print this page</button></nav>`;
   if (tab !== 'signal') {
     root.innerHTML = `<div class="titlebar"><div><h1>Emergency</h1>
-      <p class="lead">${{ card: 'Who you are and who to call, for whoever helps you.', kits: 'What to have ready, and how much.', location: 'Say exactly where you are, in the format the other person uses.', aid: 'What to do first, while help is on the way.' }[tab]}</p></div>${nav}</div><div id="embody"><p class="muted">Loading…</p></div>`;
+      <p class="lead">${{ numbers: 'Who to call for police, ambulance and fire, one tap each.', card: 'Who you are and who to call, for whoever helps you.', location: 'Say exactly where you are, in the format the other person uses.', aid: 'What to do first, while help is on the way.' }[tab]}</p></div></div>${nav}<div id="embody"><p class="muted">Loading…</p></div>`;
+    root.querySelector('.em-print').addEventListener('click', () => window.print());
+    shadeWhenPinned(root);
     const body = $('#embody', root);
-    return ({ card: cardView, kits: kitsView, location: locationView, aid: firstAidView }[tab])(body);
+    return ({ numbers: numbersView, card: cardView, location: locationView, aid: firstAidView }[tab])(body);
   }
   root.innerHTML = `<div class="titlebar"><div><h1>Emergency</h1>
       <p class="lead">Signal, spell and talk clearly when other ways fail. Everything here works with no connection.</p></div>
-      <div class="row noprint">${nav}<button class="btn" type="button" id="print">Print this page</button></div></div>
+      </div>
+    ${nav}
 
     <section class="block em-net noprint"><h2>Call for help on this network</h2>
       <p class="muted" style="max-width:70ch">Sets off an alarm on every screen signed in to this Outpost, with your name, your message and where you are. Others can answer “I’m coming” and you see who is on the way.</p>
       <p><button class="btn sosgo" type="button" id="netsos">Send SOS to everyone</button></p>
     </section>
+
+    <section class="block em-safe noprint" id="safe"></section>
 
     <section class="block em-sos noprint"><h2>Signal with sound and light</h2>
       <button class="btn sos" type="button" id="sos" aria-pressed="false"><b>SOS</b><span>Send · · · — — — · · · until stopped</span></button>
@@ -61,6 +91,16 @@ export async function viewEmergency(root, sub) {
       <div class="field"><label for="spellin">Name, place or code to spell over a radio or bad phone line</label><input id="spellin" value="" placeholder="e.g. Beirut 9" autocomplete="off"></div>
       <p class="decoded" id="spellout">–</p>
       <div class="nato">${Object.entries(NATO).map(([k, v]) => `<span><b>${k}</b> ${v}</span>`).join('')}</div>
+    </section>
+
+    <section class="block"><h2>Signals searchers know</h2>
+      <p class="muted" style="max-width:70ch">To aircraft: lay these out in the open, as big as you can (at least 2.5 m, 8 ft, long), in something that stands out against the ground: stones, branches, clothing, or lines trampled in snow.</p>
+      <div class="g2a">${GROUND.map(([k, label, d]) => `<figure><svg viewBox="0 0 80 80" role="img" aria-label="${k}: ${label}">${d}</svg><figcaption><b>${k}</b> ${label}</figcaption></figure>`).join('')}</div>
+      <dl class="readout signals">
+        <div><dt>Three of anything</dt><dd>Means help: three whistle blasts, three flashes of a light or mirror, three fires in a triangle. Pause, then repeat. In the mountains of Europe the call is six blasts or flashes a minute, answered with three.</dd></div>
+        <div><dt>Mirror</dt><dd>Hold it by your eye, stretch your other arm out with two fingers in a V around the aircraft or searcher, and tilt the mirror until the bright spot falls between your fingers. Then flash.</dd></div>
+        <div><dt>Trapped</dt><dd>Tap on a pipe or wall, or blow a whistle, rather than shouting: it carries further and saves your breath and lungs from dust.</dd></div>
+      </dl>
     </section>
 
     <section class="block"><h2>Radio channels</h2>
@@ -145,9 +185,11 @@ export async function viewEmergency(root, sub) {
     if (e.target.id === 'spellin') paintSpell();
   });
 
+  shadeWhenPinned(root);
+  const stopCheckin = mountCheckin($('#safe', root));
   root.addEventListener('click', (e) => {
     const t = e.target.closest('button') ?? e.target;
-    if (t.id === 'print') window.print();
+    if (t.closest('.em-print')) window.print();
     if (t.id === 'netsos') openSosDialog();
     if (t.id === 'sos') {
       if (stopFn) return stop();
@@ -212,6 +254,7 @@ export async function viewEmergency(root, sub) {
 
   return () => {
     stop();
+    stopCheckin();
     clearTimeout(gapTimer);
     document.removeEventListener('keydown', onKey);
     document.removeEventListener('keyup', onKey);

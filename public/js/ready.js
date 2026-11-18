@@ -1,4 +1,5 @@
-import { $, api, esc, fmtBytes, jsonBody, store } from './core.js';
+import { $, api, esc, fmtBytes, jsonBody } from './core.js';
+import { kitsView } from './emergency-kit.js';
 
 const GROUPS = [
   ['', 'All'],
@@ -10,32 +11,13 @@ const GROUPS = [
 ];
 
 // The Ready.gov basic disaster supplies kit.
-const BASIC_KIT = [
-  ['water', 'Water', 'One gallon per person per day, for several days'],
-  ['food', 'Food', 'At least a several-day supply of non-perishable food'],
-  ['radio', 'Battery or hand-crank radio', 'Plus a NOAA Weather Radio with tone alert'],
-  ['flashlight', 'Flashlight', ''],
-  ['firstaid', 'First aid kit', ''],
-  ['batteries', 'Extra batteries', ''],
-  ['whistle', 'Whistle', 'To signal for help'],
-  ['mask', 'Dust mask, plastic sheeting and duct tape', 'To filter air and shelter in place'],
-  ['sanitation', 'Moist towelettes, garbage bags and plastic ties', 'For personal sanitation'],
-  ['wrench', 'Wrench or pliers', 'To turn off utilities'],
-  ['opener', 'Manual can opener', 'For food'],
-  ['maps', 'Local maps', ''],
-  ['phone', 'Cell phone with chargers and a backup battery', ''],
-];
-
-const KIT_KEY = 'outpost.readyKit';
-export const back = '<a class="btn small" href="#home">← Home</a>';
-
-/** Preparedness: Ready.gov guides kept on this Mac, plus the basic supply kit checklist. */
+/** Preparedness: your emergency kits, and Ready.gov guides kept on this Mac. */
 export async function viewReady(root) {
-  root.innerHTML = `<div class="titlebar"><div>${back}
-      <p class="kicker">Field manual · Ready.gov</p><h1>Preparedness guides</h1>
-      <p class="lead">Plans, hazard guides and checklists from Ready.gov. Download them once and they work without the internet.</p></div></div>
+  root.innerHTML = `<div class="titlebar"><div><h1>Preparedness</h1>
+      <p class="lead">Your emergency kits, and plans, hazard guides and checklists from Ready.gov. Download the guides once and they work without the internet.</p></div></div>
     <div class="prep">
-      <section class="card prep-kit" id="kit"></section>
+      <div id="kit"></div>
+      <h2 class="prep-guides">Ready.gov guides</h2>
       <div class="prep-tools">
         <div class="prep-pills" role="group" aria-label="Show"></div>
         <input type="search" id="rq" placeholder="Search guides" aria-label="Search guides" autocomplete="off">
@@ -44,7 +26,8 @@ export async function viewReady(root) {
       <p class="muted small" id="rstatus" role="status"></p>
       <div id="rlist"><p class="muted">Loading…</p></div>
     </div>`;
-  paintKit($('#kit', root));
+  const kit = $('#kit', root);
+  kitsView(kit).catch((err) => (kit.innerHTML = `<p class="note-box">${esc(err.message)}</p>`));
 
   const list = $('#rlist', root);
   const pills = $('.prep-pills', root);
@@ -177,32 +160,4 @@ export async function viewReady(root) {
   q.addEventListener('input', paint);
   paint();
   if (data.items.some((it) => it.downloading)) watch();
-}
-
-function paintKit(box) {
-  const ticks = store.get(KIT_KEY, {}) ?? {};
-  const ready = BASIC_KIT.filter(([id]) => ticks[id]).length;
-  box.innerHTML = `<div class="ptitle"><h2>Basic supply kit</h2>
-      <span class="kicker" id="kitcount">${ready} of ${BASIC_KIT.length} ready</span></div>
-    <div class="bar" title="Kit ready"><i style="width:${(ready / BASIC_KIT.length) * 100}%"></i></div>
-    <ul class="kitlist">${BASIC_KIT.map(([id, label, hint]) => `<li><label>
-      <input type="checkbox" data-kit="${esc(id)}" ${ticks[id] ? 'checked' : ''}>
-      <span><strong>${esc(label)}</strong>${hint ? `<small>${esc(hint)}</small>` : ''}</span></label></li>`).join('')}</ul>
-    <button class="btn small" type="button" id="kitreset" ${ready ? '' : 'disabled'}>Clear all ticks</button>
-    <p class="muted small">Ticks are saved in this browser only.</p>`;
-  box.onchange = (e) => {
-    const id = e.target.dataset?.kit;
-    if (!id) return;
-    const now = store.get(KIT_KEY, {}) ?? {};
-    if (e.target.checked) now[id] = true;
-    else delete now[id];
-    store.set(KIT_KEY, now);
-    paintKit(box);
-    $(`[data-kit="${id}"]`, box)?.focus();
-  };
-  box.onclick = (e) => {
-    if (e.target.id !== 'kitreset') return;
-    store.set(KIT_KEY, {});
-    paintKit(box);
-  };
 }

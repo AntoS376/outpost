@@ -3,7 +3,7 @@ import type { AppContext } from '../context.js';
 import { isInstaller } from '../services/installers.js';
 import { HttpError } from '../util.js';
 
-/** /api/install/:id: Kolibri, CyberChef and map fonts. Reading is open to anyone signed in; installing needs an admin (central gate). */
+/** /api/install/:id: Kolibri, CyberChef, map fonts and the radio tools. Reading is open to anyone signed in; installing needs an admin (central gate). */
 export function installRoutes(ctx: AppContext): Router {
   const r = Router();
   const id = (raw: string) => {

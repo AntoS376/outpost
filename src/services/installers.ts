@@ -12,6 +12,7 @@ const INSTALLERS = {
   kolibri: { name: 'Kolibri', script: 'install-kolibri.sh', done: 'Kolibri is installed. Start it on the Education page.' },
   cyberchef: { name: 'CyberChef', script: 'fetch-cyberchef.sh', done: 'CyberChef is installed. Open it from Tools.' },
   mapfonts: { name: 'map fonts', script: 'fetch-map-assets.sh', done: 'Map fonts are installed. Maps now show place names.' },
+  radio: { name: 'radio tools', script: 'install-radio.sh', done: 'The radio tools are installed. Plug in the RTL-SDR, then use Listen, Planes, Sensors or APRS on the Radio page.' },
 } as const;
 
 export type InstallerId = keyof typeof INSTALLERS;

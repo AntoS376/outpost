@@ -20,6 +20,7 @@ import { joinRoutes } from './routes/join.js';
 import { KeepAwake } from './services/awake.js';
 import { PositionBoard } from './services/positions.js';
 import { SosBoard } from './services/sos.js';
+import { CheckinBoard } from './services/checkin.js';
 import { RoutingService } from './services/routing.js';
 import { routingRoutes } from './routes/routing.js';
 import { DockerService } from './services/docker.js';
@@ -35,6 +36,8 @@ import { benchmarkRoutes } from './routes/benchmark.js';
 import { educationRoutes } from './routes/education.js';
 import { installRoutes } from './routes/install.js';
 import { voiceRoutes } from './routes/voice.js';
+import { RadioService } from './services/radio.js';
+import { radioRoutes } from './routes/radio.js';
 import { HttpError } from './util.js';
 import { KiwixService } from './services/process.js';
 import { JobManager } from './services/jobs.js';
@@ -89,6 +92,7 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
     kolibri: new KolibriService(cfg),
     installers: new InstallerService(cfg, jobs),
     voice: new VoiceStore(cfg.dirs.voice),
+    radio: new RadioService(cfg),
     places: new PlaceIndex(cfg, jobs),
     benchmark: new Benchmark(cfg, ai),
     apps: new AppsService(cfg, jobs),
@@ -96,6 +100,7 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
     awake: new KeepAwake(cfg),
     positions: new PositionBoard(),
     sos: new SosBoard(),
+    checkin: new CheckinBoard(),
     routing: new RoutingService(cfg, jobs),
     gpu: new GpuMonitor(cfg.ioregBin),
     // Ports a Docker app may not take: Outpost's own, its helpers' and the shelf apps'.
@@ -121,6 +126,7 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
     },
   };
   await ctx.apps.load();
+  await ctx.radio.load();
 
   const app = express();
   app.disable('x-powered-by');
@@ -168,6 +174,7 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
   app.use('/api/education', educationRoutes(ctx));
   app.use('/api/install', installRoutes(ctx));
   app.use('/api/voice', voiceRoutes(ctx));
+  app.use('/api/radio', radioRoutes(ctx));
   app.use('/api/benchmark', benchmarkRoutes(ctx));
   app.use('/api/users', usersRoutes(ctx));
   app.use('/api/chats', chatsRoutes(ctx));
@@ -205,6 +212,15 @@ export async function createApp(cfg: Config): Promise<{ app: express.Express; co
     const me = userOf(res);
     ctx.sos.cancel(String(req.params.id), me.name, me.role === 'admin');
     if (me.role === 'admin') console.log(`SOS ${req.params.id} cancelled by ${me.name}`);
+    res.json({ ok: true });
+  });
+  // "Who's safe": everyone's check-in, and who hasn't checked in. In memory only; each person sets or clears their own.
+  app.get('/api/checkin', (_req, res) => {
+    res.json({ me: userOf(res).name, people: ctx.checkin.list(), everyone: ctx.users.list().map((u) => u.name) });
+  });
+  app.put('/api/checkin/me', (req, res) => res.json(ctx.checkin.set(userOf(res).name, req.body ?? {})));
+  app.delete('/api/checkin/me', (_req, res) => {
+    ctx.checkin.clear(userOf(res).name);
     res.json({ ok: true });
   });
   // Shutdown (admins only: the central gate refuses this to members). Answers first, then stops.

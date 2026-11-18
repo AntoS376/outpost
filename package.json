@@ -1,7 +1,7 @@
 {
   "name": "outpost",
-  "version": "2.0.0",
-  "released": "2026-11-12",
+  "version": "2.1.0",
+  "released": "2026-11-18",
   "description": "Offline knowledge server for macOS: library, local AI, maps and notes in one browser UI.",
   "private": true,
   "type": "module",

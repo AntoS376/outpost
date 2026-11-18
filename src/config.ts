@@ -21,6 +21,8 @@ export interface Config {
    * profiles (default: next to the programs, as Homebrew installs them), osmium, and Geofabrik's list of regions.
    */
   routing: { osrmDir: string; profiles: string; osmiumBin: string; indexUrl: string };
+  /** The RTL-SDR receiver's programs (Homebrew's librtlsdr). */
+  radio: { rtlFmBin: string; rtlTestBin: string; rtlPowerBin: string; dump1090Bin: string; rtl433Bin: string; direwolfBin: string };
   /** Docker apps (admins run containers from the Apps page): off unless OUTPOST_DOCKER=1. */
   docker: { enabled: boolean; bin: string };
   /** macOS's caffeinate, for keeping the Mac awake while Outpost serves. */
@@ -100,6 +102,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     },
     kiwixBin: env.OUTPOST_KIWIX_BIN ?? 'kiwix-serve',
     pmtilesBin: env.OUTPOST_PMTILES_BIN ?? 'pmtiles',
+    radio: { rtlFmBin: env.OUTPOST_RTL_FM_BIN ?? 'rtl_fm', rtlTestBin: env.OUTPOST_RTL_TEST_BIN ?? 'rtl_test', rtlPowerBin: env.OUTPOST_RTL_POWER_BIN ?? 'rtl_power', dump1090Bin: env.OUTPOST_DUMP1090_BIN ?? 'dump1090', rtl433Bin: env.OUTPOST_RTL433_BIN ?? 'rtl_433', direwolfBin: env.OUTPOST_DIREWOLF_BIN ?? 'direwolf' },
     docker: { enabled: env.OUTPOST_DOCKER === '1', bin: env.OUTPOST_DOCKER_BIN || 'docker' },
     routing: {
       osrmDir: env.OUTPOST_OSRM_DIR ?? '',

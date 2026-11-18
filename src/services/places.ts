@@ -69,6 +69,45 @@ const lat2y = (lat: number, z: number) => {
   return Math.min(2 ** z - 1, Math.max(0, Math.floor(((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 2 ** z)));
 };
 
+/** Kinds of help nearby() looks for, from the map's "pois" layer (Protomaps kinds). */
+export const HELP_KINDS = ['hospital', 'clinic', 'doctors', 'pharmacy', 'police', 'fire_station'];
+/** How far nearby() looks, and how many of each kind it returns. */
+export const HELP_RADIUS_KM = 10;
+const HELP_PER_KIND = 3;
+
+export interface Help {
+  kind: string;
+  name: string;
+  en: string | null;
+  lat: number;
+  lon: number;
+  km: number;
+}
+
+/** Great-circle distance in km. */
+export function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const r = Math.PI / 180;
+  const a = Math.sin(((lat2 - lat1) * r) / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(((lon2 - lon1) * r) / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(a));
+}
+
+/** The nearest few of each kind within the radius, nearest first; the same place seen in two tiles counts once. */
+export function nearestHelp(found: Omit<Help, 'km'>[], lat: number, lon: number): Help[] {
+  const seen = new Set<string>();
+  const perKind = new Map<string, number>();
+  return found
+    .map((f) => ({ ...f, km: Math.round(distanceKm(lat, lon, f.lat, f.lon) * 100) / 100 }))
+    .filter((f) => f.km <= HELP_RADIUS_KM)
+    .sort((a, b) => a.km - b.km)
+    .filter((f) => {
+      const key = `${f.kind}|${f.name}|${f.lat.toFixed(4)}|${f.lon.toFixed(4)}`;
+      if (seen.has(key) || (perKind.get(f.kind) ?? 0) >= HELP_PER_KIND) return false;
+      seen.add(key);
+      perKind.set(f.kind, (perKind.get(f.kind) ?? 0) + 1);
+      return true;
+    });
+}
+
 /** Lowercase, accents removed, punctuation as spaces: "Sainte-Dévote" → "sainte devote". */
 export function normalize(s: string): string {
   return s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[\s\-‐'’.,()]+/g, ' ').trim();
@@ -226,6 +265,44 @@ export class PlaceIndex {
     const places = raw.places.map((p) => ({ ...p, keys: [...new Set([p.n, ...p.alt].map(normalize))] }));
     this.cache.set(name, { mtime: raw.built, places });
     return places;
+  }
+
+  /**
+   * Hospitals, pharmacies, police and the like around a point, read straight from the map's most detailed tiles
+   * (zoom 15 has them all; lower zooms only the biggest). About 500 small tiles for 10 km, so no index is kept.
+   */
+  async nearby(name: string, lat: number, lon: number): Promise<Help[]> {
+    const file = this.mapFile(name);
+    const fh = await fsp.open(file, 'r');
+    try {
+      const pm = new PMTiles(new FileSource(file, fh));
+      const h = await pm.getHeader();
+      const z = Math.min(15, h.maxZoom);
+      const dLat = HELP_RADIUS_KM / 111;
+      const dLon = HELP_RADIUS_KM / (111 * Math.max(0.05, Math.cos((lat * Math.PI) / 180)));
+      const found: Omit<Help, 'km'>[] = [];
+      for (let x = lon2x(lon - dLon, z); x <= lon2x(lon + dLon, z); x++) {
+        for (let y = lat2y(lat + dLat, z); y <= lat2y(lat - dLat, z); y++) {
+          const tile = await pm.getZxy(z, x, y);
+          if (!tile) continue;
+          const layer = new VectorTile(new PbfReader(new Uint8Array(tile.data))).layers.pois;
+          for (let i = 0; i < (layer?.length ?? 0); i++) {
+            const f = layer!.feature(i);
+            const kind = String(f.properties.kind ?? '');
+            if (!HELP_KINDS.includes(kind)) continue;
+            const geom = f.toGeoJSON(x, y, z).geometry;
+            if (geom.type !== 'Point') continue;
+            const [plon, plat] = geom.coordinates as [number, number];
+            const n = typeof f.properties.name === 'string' ? f.properties.name : '';
+            const en = typeof f.properties['name:en'] === 'string' && f.properties['name:en'] !== n ? String(f.properties['name:en']) : null;
+            found.push({ kind, name: n, en, lat: Math.round(plat * 1e5) / 1e5, lon: Math.round(plon * 1e5) / 1e5 });
+          }
+        }
+      }
+      return nearestHelp(found, lat, lon);
+    } finally {
+      await fh.close();
+    }
   }
 
   async search(name: string, query: string, limit = 20): Promise<SearchResult[]> {

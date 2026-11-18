@@ -5,7 +5,7 @@ const LOOPBACK = ['127.0.0.1', '::1', 'localhost'];
 
 /** The setup guide (docs/SETUP.md), with this Outpost's own sharing status on top and a list of sections. */
 export async function viewGuide(root) {
-  root.innerHTML = `<div class="guide"><aside class="guide-toc"><p class="muted">Loading…</p></aside><article class="guide-body"></article></div>`;
+  root.innerHTML = `<h1>Guide</h1><div class="guide"><aside class="guide-toc"><p class="muted">Loading…</p></aside><article class="guide-body"></article></div>`;
   const [text, s] = await Promise.all([fetch('/guide.md').then((r) => (r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`)))), api('/status').catch(() => null)]);
   const body = $('.guide-body', root);
   body.innerHTML = md(text);

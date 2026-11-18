@@ -7,7 +7,7 @@ import { chromium } from 'playwright-core';
 
 const base = (process.argv[2] ?? 'http://localhost:8080').replace(/\/+$/, '');
 const out = path.resolve(process.argv[3] ?? 'screenshots');
-const pages = ['home', 'library', 'library/manage', 'ai', 'maps', 'education', 'notes', 'tools', 'apps', 'documents', 'guide', 'emergency', 'emergency/aid', 'emergency/location', 'emergency/card', 'emergency/kits', 'benchmark', 'updates', 'account', 'setup'];
+const pages = ['home', 'library', 'library/manage', 'ai', 'maps', 'education', 'notes', 'tools', 'apps', 'documents', 'guide', 'emergency', 'emergency/aid', 'emergency/location', 'emergency/card', 'emergency/kits', 'ready', 'radio', 'voice', 'games', 'benchmark', 'updates', 'account', 'setup'];
 const sizes = { desktop: { width: 1280, height: 800 }, phone: { width: 390, height: 844 } };
 
 await mkdir(out, { recursive: true });

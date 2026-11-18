@@ -121,8 +121,8 @@ export async function viewHome(root) {
     // Smaller tiles, grouped by what they're for.
     const groups = [
       ['Stay ready', [
-        slim({ href: '#ready', icon: 'ready', title: 'Preparedness', caption: 'Guides & supply kit', state: 'idle' }),
-        slim({ href: '#radio', icon: 'radio', title: 'Radio', caption: 'Channels & check-ins', state: 'idle' }),
+        slim({ href: '#ready', icon: 'ready', title: 'Preparedness', caption: 'Guides & kits', state: 'idle' }),
+        slim({ href: '#radio', icon: 'radio', title: 'Radio', caption: 'Receiver, planes & channels', state: 'idle' }),
         slim({ href: '#notes', icon: 'notes', title: 'Notes', caption: notes ? plural(notes, 'note') : 'Capture & organize', state: notes ? 'ok' : 'idle' }),
       ]],
       ['Learn & unwind', [
@@ -181,7 +181,7 @@ export async function viewHome(root) {
     body.innerHTML = `<div class="sos">
         <svg class="warn" viewBox="0 0 48 44" aria-hidden="true"><path d="M24 3 L46 41 H2 Z"/><path d="M24 16 v12" class="cut"/><circle cx="24" cy="34" r="2.4" class="dot"/></svg>
         <a class="sostitle" href="#emergency"><strong>Emergency SOS</strong><span>Signal · first aid · location</span></a>
-        <span class="sostext">Call everyone on this Outpost for help, or signal with sound, light and Morse. First-aid steps, where you are, your emergency card and kits. Works offline.</span>
+        <span class="sostext">Call everyone on this Outpost for help, or signal with sound, light and Morse. Who’s safe, numbers to call, first aid, where you are and your emergency card. Works offline.</span>
         <button class="sosbtn" type="button" id="sendsos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>Send SOS</button></div>
       ${attention.length ? `<ul class="ready attention">${attention.join('')}</ul>` : ''}
       <div class="primaries">${cards.join('')}</div>

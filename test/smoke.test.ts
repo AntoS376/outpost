@@ -9,6 +9,7 @@ import { createApp } from '../src/app.js';
 import { parseCatalog, parseCategories, parseLanguages } from '../src/services/catalog.js';
 import { chunkText } from '../src/services/rag.js';
 import { safeFileName } from '../src/util.js';
+import { distanceKm, nearestHelp } from '../src/services/places.js';
 import { BIG, embedSeen, held, remoteCalls, embedStats, fakeEmbed, freePort, here, lastChatBody, listen, makeExecutable, mockFiles, mockOllama, mockOpenAi, openAiSeen, tmpHome, waitFor, CONTENT_PATH } from './helpers.js';
 
 let base = '';
@@ -922,6 +923,32 @@ describe('map place search', () => {
       await app.close();
     }
   });
+  it('finds the nearest hospitals, pharmacies, police and fire stations around a point', async () => {
+    const at = (kind: string, name: string, lat: number, lon: number) => ({ kind, name, en: null, lat, lon });
+    const found = [
+      at('pharmacy', 'Far', 33.95, 35.5), at('pharmacy', 'Near', 33.8945, 35.5), at('pharmacy', 'Near', 33.8945, 35.5), // seen in two tiles
+      at('pharmacy', 'B', 33.896, 35.5), at('pharmacy', 'C', 33.897, 35.5), at('pharmacy', 'D', 33.898, 35.5),
+      at('hospital', 'Out of reach', 34.1, 35.5),
+    ];
+    const near = nearestHelp(found, 33.8938, 35.5);
+    assert.deepEqual(near.map((h) => h.name), ['Near', 'B', 'C'], 'nearest first, three of a kind, duplicates once, nothing past 10 km');
+    assert.ok(Math.abs(distanceKm(33.8938, 35.5018, 34.4367, 35.8497) - 68.4) < 1, 'Beirut to Tripoli is about 68 km');
+
+    const app = await isolatedApp({});
+    try {
+      await app.call('/api/maps/upload/monaco.pmtiles', { method: 'PUT', body: fixture() });
+      await indexJob(app.call, 'monaco.pmtiles'); // adding a map starts its place index; let it finish before the folder is removed
+      const r = await app.call('/api/maps/nearby?file=monaco.pmtiles&lat=43.735&lon=7.42');
+      assert.equal(r.status, 200, JSON.stringify(r.json));
+      assert.deepEqual(r.json.results.map((h: any) => [h.kind, h.name]), [['hospital', 'Fondation Hector Ott'], ['hospital', 'Institut Monégasque de Médecine du Sport']], 'read from the map’s own tiles (the biggest only, at zoom 13)');
+      assert.equal(r.json.results[0].km, 0.44);
+      assert.equal((await app.call('/api/maps/nearby?file=monaco.pmtiles&lat=99&lon=7.42')).status, 400);
+      assert.equal((await app.call('/api/maps/nearby?file=nope.pmtiles&lat=43&lon=7')).status, 404);
+      assert.equal((await app.call('/api/maps/nearby?file=../x&lat=43&lon=7')).status, 400);
+    } finally {
+      await app.close();
+    }
+  });
 });
 
 describe('benchmark', () => {
@@ -986,7 +1013,7 @@ describe('benchmark', () => {
       const exp = await app.call(`/api/benchmark/${r.id}/export.json`);
       assert.equal(exp.status, 200);
       assert.match(exp.headers.get('content-disposition') ?? '', /^attachment; filename="outpost-benchmark-\d{4}-\d{2}-\d{2}-\d+\.json"$/);
-      assert.equal(exp.json.outpost.version, '2.0.0');
+      assert.equal(exp.json.outpost.version, '2.1.0');
       assert.equal(exp.json.result.score, r.score);
       assert.equal(exp.json.result.tag.name, 'Sam');
       assert.equal((await app.call('/api/benchmark/nope/export.json')).status, 404);
@@ -1053,7 +1080,7 @@ describe('update checker', () => {
       });
       assert.ok(st.lastCheck > 0);
       const r = st.results;
-      assert.deepEqual(r.outpost, { current: '2.0.0', latest: '2.1.0', newer: true, url: 'https://github.com/someone/outpost/releases/tag/v2.1.0' });
+      assert.deepEqual(r.outpost, { current: '2.1.0', latest: '2.2.0', newer: true, url: 'https://github.com/someone/outpost/releases/tag/v2.2.0' });
       assert.deepEqual(r.books.map((b: any) => [b.file, b.newFile]), [['book_a_nopic_2025-06.zim', 'book_a_nopic_2026-01.zim']], 'only books with a newer edition');
       assert.equal(r.books[0].size, 3000);
       assert.deepEqual(r.models.map((m: any) => m.name), ['llama3.2:3b'], 'nomic-embed-text is current; unknown models are skipped: ' + JSON.stringify(r.notes));

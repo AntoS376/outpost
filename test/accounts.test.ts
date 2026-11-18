@@ -221,6 +221,21 @@ describe('accounts', () => {
       assert.equal((await ben.call('/api/emergency', { method: 'PUT', json: { kits: { checked: { boat: ['x'] } } } })).status, 400);
     });
 
+    it('keeps numbers to call, and a save of one part leaves the others alone', async () => {
+      assert.deepEqual((await admin.call('/api/emergency')).json.numbers, [], 'none until you add them');
+      const numbers = [{ name: 'Red Cross', number: '140' }, { name: 'Poison control', number: '+1 (800) 222-1222' }];
+      assert.equal((await admin.call('/api/emergency', { method: 'PUT', json: { numbers } })).status, 200);
+      await admin.call('/api/emergency', { method: 'PUT', json: { kits: { checked: { gobag: ['water'] }, extra: {} } } });
+      const after = (await admin.call('/api/emergency')).json;
+      assert.deepEqual(after.numbers, numbers, 'ticking a kit item keeps the numbers');
+      assert.deepEqual(after.kits.checked.gobag, ['water']);
+      await admin.call('/api/emergency', { method: 'PUT', json: { numbers: [] } });
+      assert.deepEqual((await admin.call('/api/emergency')).json.numbers, [], 'all removed stays removed');
+      for (const bad of ['abc', '+-', '1'.repeat(31), '112; rm']) {
+        assert.equal((await admin.call('/api/emergency', { method: 'PUT', json: { numbers: [{ name: 'x', number: bad }] } })).status, 400, bad);
+      }
+    });
+
     it('lets an admin manage accounts but never remove or demote the last admin', async () => {
       const list = (await admin.call('/api/users')).json.users;
       assert.deepEqual(list.map((u: any) => [u.name, u.role]), [['anna', 'admin'], ['ben', 'member']]);
